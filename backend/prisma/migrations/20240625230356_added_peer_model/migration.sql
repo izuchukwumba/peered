@@ -1,0 +1,15 @@
+-- CreateTable
+CREATE TABLE "Peer" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "peerId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Peer_pkey" PRIMARY KEY ("id")
+);
+
+-- AddForeignKey
+ALTER TABLE "Peer" ADD CONSTRAINT "Peer_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Peer" ADD CONSTRAINT "Peer_peerId_fkey" FOREIGN KEY ("peerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
