@@ -30,7 +30,11 @@ function SignUp() {
       });
       if (!response.ok) {
         const errorResponse = await response.json();
-        throw new Error(errorResponse.error || "Failed to register");
+        throw new Error(
+          errorResponse.errors
+            ? errorResponse.errors.map((err) => err.msg).join(", ")
+            : "Failed to register"
+        );
       }
       navigate("/login");
     } catch (error) {
@@ -78,7 +82,7 @@ function SignUp() {
             placeholder="Type in fullname..."
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            required
+            // required
           />
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}

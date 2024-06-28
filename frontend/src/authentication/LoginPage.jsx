@@ -74,6 +74,7 @@ function LoginPage() {
       <button className="btn" onClick={handleLoginWithGithub}>
         Login with Github
       </button>
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 }

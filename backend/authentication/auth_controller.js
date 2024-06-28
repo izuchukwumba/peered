@@ -2,6 +2,7 @@ const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const prisma = require("../prisma_client");
 const bcrypt = require("bcrypt");
+const { check, validationResult } = require("express-validator");
 require("dotenv").config();
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
@@ -9,28 +10,63 @@ const BACKEND_URL = process.env.BACKEND_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
 const SALT_ROUNDS = 10;
 
-exports.register = async (req, res) => {
-  const { username, email, password, fullName } = req.body;
-  try {
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = await prisma.user.create({
-      data: {
-        username,
-        email,
-        password: hashedPassword,
-        fullName,
-      },
-    });
-    res.status(200).json({
-      message: "Account created successfully",
-    });
-    res.redirect(`${FRONTEND_URL}/login`);
-  } catch (err) {
-    res.status(500).json({
-      error: err.message,
-    });
-  }
-};
+exports.register = [
+  //Validation checks
+  check("username", "Username is required").not().isEmpty(),
+  check("email", "Please add email address").not().isEmpty(),
+  check("password", "Password must be at least 5 characters").isLength({
+    min: 5,
+  }),
+  check("fullName", "Add first and last name").not().isEmpty(),
+
+  //router handler
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+    }
+    const { username, email, password, fullName } = req.body;
+    try {
+      const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+      const user = await prisma.user.create({
+        data: {
+          username,
+          email,
+          password: hashedPassword,
+          fullName,
+        },
+      });
+      res.redirect(`${FRONTEND_URL}/login`);
+    } catch (err) {
+      res.status(500).json({
+        error: err.message,
+      });
+    }
+  },
+];
+
+// exports.register = async (req, res) => {
+//   const { username, email, password, fullName } = req.body;
+//   try {
+//     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+//     const user = await prisma.user.create({
+//       data: {
+//         username,
+//         email,
+//         password: hashedPassword,
+//         fullName,
+//       },
+//     });
+//     // res.status(200).json({
+//     //   message: "Account created successfully",
+//     // });
+//     res.redirect(`${FRONTEND_URL}/login`);
+//   } catch (err) {
+//     res.status(500).json({
+//       error: err.message,
+//     });
+//   }
+// };
 
 exports.login = async (req, res) => {
   const { username, password } = req.body;
@@ -135,6 +171,6 @@ exports.githubCallback = async (req, res) => {
 
 exports.logout = (req, res) => {
   res.clearCookie("jwt", { httpOnly: true });
-  res.status(200).json({ message: "Logged out successfully" });
+  // res.status(200).json({ message: "Logged out successfully" });
   res.redirect(`${FRONTEND_URL}/`);
 };
