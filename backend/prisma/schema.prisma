@@ -39,7 +39,7 @@ model Chat {
   toUserId Int
   fromUser User @relation("SentChats", fields: [fromUserId], references: [id])
   toUser User @relation("ReceivedChats", fields: [toUserId], references: [id])
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now())gidvjcrdlkkekfkkfbbvdjchnnrveunr
 }
 
 model ChatbotInteraction {

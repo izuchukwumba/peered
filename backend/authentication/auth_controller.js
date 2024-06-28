@@ -39,34 +39,11 @@ exports.register = [
       res.redirect(`${FRONTEND_URL}/login`);
     } catch (err) {
       res.status(500).json({
-        error: err.message,
+        error: "Error creating account. Try again.",
       });
     }
   },
 ];
-
-// exports.register = async (req, res) => {
-//   const { username, email, password, fullName } = req.body;
-//   try {
-//     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-//     const user = await prisma.user.create({
-//       data: {
-//         username,
-//         email,
-//         password: hashedPassword,
-//         fullName,
-//       },
-//     });
-//     // res.status(200).json({
-//     //   message: "Account created successfully",
-//     // });
-//     res.redirect(`${FRONTEND_URL}/login`);
-//   } catch (err) {
-//     res.status(500).json({
-//       error: err.message,
-//     });
-//   }
-// };
 
 exports.login = async (req, res) => {
   const { username, password } = req.body;
@@ -76,12 +53,12 @@ exports.login = async (req, res) => {
       where: { username },
     });
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ message: "Invalid username or password" });
     }
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return res.status(400).json({
-        messsage: "Wrong password",
+        messsage: "Invalid username or password",
       });
     }
     const token = jwt.sign(
@@ -101,7 +78,7 @@ exports.login = async (req, res) => {
     res.status(200).json({ message: "Login successful", token });
   } catch (err) {
     res.status(500).json({
-      error: err.message,
+      error: "Error logging in. Try again",
     });
   }
 };
@@ -171,6 +148,5 @@ exports.githubCallback = async (req, res) => {
 
 exports.logout = (req, res) => {
   res.clearCookie("jwt", { httpOnly: true });
-  // res.status(200).json({ message: "Logged out successfully" });
   res.redirect(`${FRONTEND_URL}/`);
 };
