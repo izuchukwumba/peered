@@ -8,54 +8,52 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  username String @unique
-  email String? @unique
-  password String?
-  fullName String
-  imageUrl String?
-  files File[]
-  sentChats Chat[] @relation("SentChats")
-  receivedChats Chat[] @relation("ReceivedChats")
-  chatbotInteraction ChatbotInteraction[]
-  peers Peer[] @relation("UserPeers")
-  peerOf Peer[] @relation("PeerUsers")
+  id               Int           @id @default(autoincrement())
+  username         String        @unique
+  email            String?       @unique
+  password         String?
+  fullName         String
+  imageUrl         String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @default(now()) @updatedAt
+  codeGroups       CodeGroup[]   @relation("UserCodeGroups")
+  groupMemberships GroupMember[] @relation("UserGroupMemberships")
+  addedGroups      GroupMember[] @relation("AddedByUser")
+  files            File[]        @relation("UserFiles")
+}
+
+model CodeGroup {
+  id        Int           @id @default(autoincrement())
+  groupName String
+  imgUrl    String?
+  creatorId Int
+  createdAt DateTime      @default(now())
+  creator   User          @relation("UserCodeGroups", fields: [creatorId], references: [id])
+  members   GroupMember[] @relation("GroupMembers")
+  files     File[]        @relation("GroupFiles")
+}
+
+model GroupMember {
+  id        Int       @id @default(autoincrement())
+  groupId   Int
+  userId    Int
+  addedById Int
+  addedAt   DateTime  @default(now())
+  group     CodeGroup @relation("GroupMembers", fields: [groupId], references: [id])
+  user      User      @relation("UserGroupMemberships", fields: [userId], references: [id])
+  addedBy   User      @relation("AddedByUser", fields: [addedById], references: [id])
+
+  @@unique([groupId, userId])
 }
 
 model File {
-  id Int @id @default(autoincrement())
-  fileName String
-  fileContent String
-  userId Int
-  user User @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Chat {
-  id Int @id @default(autoincrement())
-  message String
-  fromUserId Int
-  toUserId Int
-  fromUser User @relation("SentChats", fields: [fromUserId], references: [id])
-  toUser User @relation("ReceivedChats", fields: [toUserId], references: [id])
-  createdAt DateTime @default(now())gidvjcrdlkkekfkkfbbvdjchnnrveunr
-}
-
-model ChatbotInteraction {
-  id Int @id @default(autoincrement())
-  question String
-  response String
-  userId Int
-  user User @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-}
-
-model Peer {
-  id Int @id @default(autoincrement())
-  userId Int
-  peerId Int
-  user User @relation("UserPeers", fields: [userId], references: [id])
-  peer User @relation("PeerUsers", fields: [peerId], references: [id])
-  createdAt DateTime @default(now())
+  id            Int       @id @default(autoincrement())
+  fileName      String
+  fileContent   String
+  creatorId     Int
+  groupId       Int
+  createdAt     DateTime  @default(now())
+  lastUpdatedAt DateTime  @updatedAt
+  user          User      @relation("UserFiles", fields: [creatorId], references: [id])
+  codeGroup     CodeGroup @relation("GroupFiles", fields: [groupId], references: [id])
 }
