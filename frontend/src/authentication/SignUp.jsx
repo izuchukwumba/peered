@@ -82,7 +82,7 @@ function SignUp() {
             placeholder="Type in fullname..."
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            // required
+            required
           />
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}
