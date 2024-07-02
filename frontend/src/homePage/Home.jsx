@@ -1,41 +1,30 @@
-import Cookies from "js-cookie";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUserInfo } from "../contexts/userInfoContext";
-import { useAuthenticated } from "../contexts/authenticatedContext";
-import "./Home";
+import "./Home.css";
+import Nav from "../app/Nav";
+import CodeGroups from "./CodeGroups";
+import Files from "./Files";
+import Activities from "./Activities";
+import Footer from "../app/Footer";
+import { useAuthenticatedContext } from "../contexts/authenticatedContext";
 
 function Home() {
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  const { isUserAuthenticated, setIsUserAuthenticated } = useAuthenticated();
-
+  const { isUserAuthenticated } = useAuthenticatedContext();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.removeItem("jwt");
-    localStorage.removeItem("userInfo");
-    Cookies.remove("jwt");
-
-    fetch(`${BACKEND_URL}/auth/github/logout`, {
-      method: "POST",
-      credentials: "include",
-    })
-      .then((response) => {
-        if (response.ok) {
-          setIsUserAuthenticated(false);
-          navigate("/");
-        }
-      })
-      .catch((error) => {
-        console.log("Try again. Error while logging out logout:", error);
-      });
-  };
 
   return (
     <div id="Home">
-      {isUserAuthenticated && "Wayo MAn"}
-      <button className="btn" onClick={handleLogout}>
-        Logout
-      </button>
+      <Nav />
+      <main id="home-body">
+        <div id="home-body-left">
+          <CodeGroups />
+          <Files />
+        </div>
+        <div id="home-body-right">
+          <Activities />
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }
