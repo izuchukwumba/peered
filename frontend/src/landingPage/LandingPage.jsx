@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthenticated } from "../contexts/authenticatedContext";
+import { useAuthenticatedContext } from "../contexts/authenticatedContext";
 import "./LandingPage.css";
 
 function LandingPage() {
-  const { isUserAuthenticated, setIsUserAuthenticated } = useAuthenticated();
+  const { isUserAuthenticated, setIsUserAuthenticated } =
+    useAuthenticatedContext();
 
   const navigate = useNavigate();
 

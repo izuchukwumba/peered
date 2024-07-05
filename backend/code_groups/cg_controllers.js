@@ -93,7 +93,7 @@ exports.createGroup = async (req, res) => {
       group: newGroup,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
     res.status(500).json({
       error: "Failed to create group",
     });

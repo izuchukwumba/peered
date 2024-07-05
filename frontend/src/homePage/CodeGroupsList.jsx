@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./CodeGroups.css";
 import axios from "axios";
+import { useAuthenticatedContext } from "../contexts/authenticatedContext";
 
 function CodeGroups() {
   const [allGroups, setAllGroups] = useState([]);
@@ -8,43 +9,43 @@ function CodeGroups() {
   const [members, setMembers] = useState([]);
   const [memberInput, setMemberInput] = useState("");
   const [error, setError] = useState("");
-  const [count, setCount] = useState(0);
+  const { isUserAuthenticated, logout } = useAuthenticatedContext();
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
+  const getGroups = async () => {
+    const options = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    };
+
+    try {
+      const createdGroups = await axios.get(
+        `${BACKEND_URL}/api/user/created-groups`,
+        options
+      );
+
+      const groupMemberships = await axios.get(
+        `${BACKEND_URL}/api/user/group-memberships`,
+        options
+      );
+
+      setAllGroups([...createdGroups.data, ...groupMemberships.data]);
+    } catch (error) {
+      setError("Error Fetching Groups.");
+    }
+  };
+  const token = localStorage.getItem("jwt");
+
   useEffect(() => {
     setAllGroups([]);
-    const token = localStorage.getItem("jwt");
-    if (!token) {
-      return;
+    if (!isUserAuthenticated || !token) {
+      logout();
     }
-
-    const getGroups = async () => {
-      const options = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      };
-
-      try {
-        const createdGroups = await axios.get(
-          `${BACKEND_URL}/api/user/created-groups`,
-          options
-        );
-
-        const addedGroups = await axios.get(
-          `${BACKEND_URL}/api/user/added-groups`,
-          options
-        );
-
-        setAllGroups([...createdGroups.data, ...addedGroups.data]);
-      } catch (error) {
-        setError("Error Fetching Groups.");
-      }
-    };
     getGroups();
-  }, [count]);
+  }, [token, BACKEND_URL]);
 
   const handleAddMembers = () => {
     if (memberInput) {
@@ -63,7 +64,7 @@ function CodeGroups() {
         { groupName, members },
         { withCredentials: true }
       );
-      setCount((prev) => prev + 1);
+      getGroups();
     } catch (error) {
       setError("Error Creating Group. Try again");
     }

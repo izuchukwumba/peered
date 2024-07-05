@@ -5,14 +5,14 @@ import Home from "./homePage/Home";
 import LoginPage from "./authentication/LoginPage";
 import SignUp from "./authentication/SignUp";
 import UserInfoContextProvider from "./contexts/userInfoContext";
-import AuthenticatedContextProvider from "./contexts/authenticatedContext";
+import { AuthenticatedContextProvider } from "./contexts/authenticatedContext";
 import ProtectedHomeRoute from "./authentication/ProtectedHomeRoute";
 
 function App() {
   return (
-    <AuthenticatedContextProvider>
-      <UserInfoContextProvider>
-        <Router>
+    <UserInfoContextProvider>
+      <Router>
+        <AuthenticatedContextProvider>
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
@@ -27,9 +27,9 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<SignUp />} />
           </Routes>
-        </Router>
-      </UserInfoContextProvider>
-    </AuthenticatedContextProvider>
+        </AuthenticatedContextProvider>
+      </Router>
+    </UserInfoContextProvider>
   );
 }
 
