@@ -9,6 +9,17 @@ router.get(
   authMiddleware,
   cg_controllers.getGroupsCreatedByUser
 );
-router.get("/user/added-groups", authMiddleware, cg_controllers.getAddedGroups);
+router.get(
+  "/user/group-memberships",
+  authMiddleware,
+  cg_controllers.getGroupMemberships
+);
+router.get("/search-for-image", cg_controllers.getGroupImageUrl);
+router.get("/group/:groupId", authMiddleware, cg_controllers.getGroupDetails);
+router.put(
+  "/group/:groupId/update-code-group",
+  authMiddleware,
+  cg_controllers.updateGroupDetails
+);
 
 module.exports = router;

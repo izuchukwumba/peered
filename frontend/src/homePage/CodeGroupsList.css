@@ -1,0 +1,15 @@
+#CodeGroups {
+  border: 1px solid white;
+  height: 600px;
+  margin-bottom: 20px;
+  overflow-y: scroll;
+}
+.home-group-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.home-group-list-item {
+  height: 100px;
+  width: 200px;
+}
