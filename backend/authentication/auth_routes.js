@@ -8,10 +8,5 @@ router.post("/login", authController.login);
 router.get("/github", authController.githubAuth);
 router.get("/github/callback", authController.githubCallback);
 router.post("/github/logout", authController.logout);
-router.get("/check", authMiddleware, (req, res) => {
-  res.status(200).json({
-    message: "Authenticated",
-  });
-});
 
 module.exports = router;

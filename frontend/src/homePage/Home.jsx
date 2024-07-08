@@ -1,8 +1,7 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import Nav from "../app/Nav";
-import CodeGroups from "./CodeGroups";
+import CodeGroupsList from "./CodeGroupsList";
 import Files from "./Files";
 import Activities from "./Activities";
 import Footer from "../app/Footer";
@@ -17,7 +16,7 @@ function Home() {
       <Nav />
       <main id="home-body">
         <div id="home-body-left">
-          <CodeGroups />
+          <CodeGroupsList />
           <Files />
         </div>
         <div id="home-body-right">
