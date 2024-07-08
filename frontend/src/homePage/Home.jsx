@@ -1,32 +1,33 @@
+import { useState } from "react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
-import { useUserInfo } from "../contexts/userInfoContext";
-import { useAuthenticated } from "../contexts/authenticatedContext";
+import { useAuthenticatedContext } from "../contexts/authenticatedContext";
 import "./Home";
 
 function Home() {
+  const [error, setError] = useState("");
+  const { logout, isUserAuthenticated } = useAuthenticatedContext();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  const { isUserAuthenticated, setIsUserAuthenticated } = useAuthenticated();
-
-  const navigate = useNavigate();
 
   const handleLogout = () => {
+    //General logout
     localStorage.removeItem("jwt");
     localStorage.removeItem("userInfo");
     Cookies.remove("jwt");
+    logout();
 
+    //Github logout
     fetch(`${BACKEND_URL}/auth/github/logout`, {
       method: "POST",
       credentials: "include",
     })
       .then((response) => {
         if (response.ok) {
-          setIsUserAuthenticated(false);
-          navigate("/");
+          logout();
         }
       })
       .catch((error) => {
-        console.log("Try again. Error while logging out logout:", error);
+        setError("Error while logging out. Try again.");
       });
   };
 

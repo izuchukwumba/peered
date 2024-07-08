@@ -1,6 +1,6 @@
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
-const prisma = require("../prisma_client");
+const prisma = require("../prisma/prisma_client");
 const bcrypt = require("bcrypt");
 const { check, validationResult } = require("express-validator");
 require("dotenv").config();
@@ -73,7 +73,7 @@ exports.login = async (req, res) => {
       httpOnly: true,
       secure: false,
       sameSite: "Lax",
-      path: "/home",
+      path: "/",
     });
     res.status(200).json({ message: "Login successful", token });
   } catch (err) {
@@ -132,9 +132,13 @@ exports.githubCallback = async (req, res) => {
       });
     }
     //Generate JWT
-    const token = jwt.sign({ accessToken, userInfo }, JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { accessToken, id: user.id, username: user.username },
+      JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
     //Bind cookie to response
     res.cookie("jwt", token, {
       httpOnly: false,

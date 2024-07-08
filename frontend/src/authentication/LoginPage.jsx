@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import { useAuthenticatedContext } from "../contexts/authenticatedContext";
 
 function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { login, isUserAuthenticated } = useAuthenticatedContext();
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -34,7 +36,7 @@ function LoginPage() {
       //Get auth cookies and store in local storage
       Cookies.set("jwt", data.token, { expires: 1, sameSite: "Lax" });
       localStorage.setItem("jwt", data.token);
-      navigate("/home");
+      login();
     } catch (err) {
       setError(err.message);
     }
@@ -47,6 +49,7 @@ function LoginPage() {
   return (
     <div id="LoginPage">
       <h1>Welcome to Peered</h1>
+      {!isUserAuthenticated && <div>Logged Out</div>}
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
         <div>
