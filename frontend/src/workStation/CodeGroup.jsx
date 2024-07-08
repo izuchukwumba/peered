@@ -199,7 +199,6 @@ function CodeGroup() {
           </Button>
         </Box>
       </HStack>
-
       <Modal isOpen={isUpdateGroupModalOpen} onClose={onUpdateGroupModalClose}>
         <ModalOverlay />
         <ModalContent>
@@ -231,7 +230,7 @@ function CodeGroup() {
                 value={newMemberInput}
                 onChange={(e) => setNewMemberInput(e.target.value)}
                 placeholder="type username"
-              />{" "}
+              />
               <Button variant="outline" onClick={handleAddNewMemberToList}>
                 add member
               </Button>
@@ -265,14 +264,12 @@ function CodeGroup() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
       <Modal isOpen={isAddMembersModalOpen} onClose={onAddMembersModalClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Add More Members</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            {" "}
             <div>
               <label>Add New Members </label>
               <input
@@ -280,7 +277,7 @@ function CodeGroup() {
                 value={newMemberInput}
                 onChange={(e) => setNewMemberInput(e.target.value)}
                 placeholder="type username"
-              />{" "}
+              />
               <Button variant="outline" onClick={handleAddNewMemberToList}>
                 add to queue
               </Button>
@@ -314,7 +311,6 @@ function CodeGroup() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
       <Modal
         isOpen={isCreateNewFileModalOpen}
         onClose={onCreateNewFileModalClose}
@@ -324,7 +320,6 @@ function CodeGroup() {
           <ModalHeader>Create New File</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            {" "}
             <div>
               <label>New File Name </label>
               <input
@@ -343,6 +338,7 @@ function CodeGroup() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
       {error && <div style={{ color: "red" }}>{error}</div>}
       <Footer />
     </Box>
