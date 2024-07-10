@@ -150,6 +150,143 @@ exports.githubCallback = async (req, res) => {
   }
 };
 
+//Update User Profile
+exports.updateProfile = async (req, res) => {
+  const { username } = req.params;
+  const { newFullName, newImageUrl, availability, skills, categories } =
+    req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        username: username,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    let newProfileData = {};
+
+    if (newFullName) {
+      newProfileData.fullName = newFullName;
+    }
+    if (newImageUrl) {
+      newProfileData.imageUrl = newImageUrl;
+    }
+    if (availability) {
+      newProfileData.availability = availability;
+    }
+
+    const updatedUserProfile = await prisma.user.update({
+      where: {
+        username: username,
+      },
+      data: newProfileData,
+    });
+
+    if (categories && categories.length > 0) {
+      await prisma.user.update({
+        where: {
+          username: username,
+        },
+        data: {
+          categories: {
+            set: [],
+          },
+        },
+      });
+      for (category of categories) {
+        try {
+          await prisma.category.create({
+            data: {
+              category: category,
+              User: {
+                connect: {
+                  username: username,
+                },
+              },
+            },
+          });
+        } catch (error) {
+          res.status(500).json({
+            error: "Error updating categories",
+          });
+        }
+      }
+    }
+    if (skills && skills.length > 0) {
+      await prisma.user.update({
+        where: {
+          username: username,
+        },
+        data: {
+          skills: {
+            set: [],
+          },
+        },
+      });
+
+      for (skill of skills) {
+        try {
+          await prisma.skill.create({
+            data: {
+              skill: skill,
+              User: {
+                connect: {
+                  username: username,
+                },
+              },
+            },
+          });
+        } catch (error) {
+          res.status(500).json({
+            error: "Error updating skills",
+          });
+        }
+      }
+    }
+    const updatedProfile = await prisma.user.findUnique({
+      where: {
+        username: username,
+      },
+    });
+    res.status(200).json(updatedProfile);
+  } catch (error) {
+    res.status(500).json({
+      error: "Error updating user profile",
+    });
+  }
+};
+
+//Fetch User Info
+exports.getUserInfo = async (req, res) => {
+  const { username } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        username: username,
+      },
+      include: {
+        skills: true,
+        categories: true,
+        codeGroups: true,
+        groupMemberships: true,
+        addedGroups: true,
+        files: true,
+      },
+    });
+    return res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({
+      error: "Error fetching user info",
+    });
+  }
+};
+
+//Log Out
 exports.logout = (req, res) => {
   res.clearCookie("jwt", { httpOnly: true });
   res.redirect(`${FRONTEND_URL}/`);
