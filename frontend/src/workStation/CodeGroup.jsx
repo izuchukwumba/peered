@@ -53,7 +53,6 @@ function CodeGroup() {
     },
     withCredentials: true,
   };
-
   const fetchGroupDetails = async () => {
     try {
       const response = await axios.get(
@@ -134,6 +133,9 @@ function CodeGroup() {
       setError("Error deleting file");
     }
   };
+  const handleUserProfileClick = (username) => {
+    navigate(`/user/${username}/profile`);
+  };
 
   return (
     <Box>
@@ -186,13 +188,31 @@ function CodeGroup() {
           borderRadius={4}
         >
           <Box m={4}>
-            <ul>
-              {allMembers?.length > 0
-                ? allMembers.map((member, index) => {
-                    return <li key={index}>{member.user.fullName}</li>;
-                  })
-                : "No members yet. Add new members"}
-            </ul>
+            {groupData.id ? (
+              <ul>
+                <li
+                  onClick={() =>
+                    handleUserProfileClick(groupData.creator.username)
+                  }
+                >
+                  {groupData.creator.fullName}&nbsp;&nbsp;(creator)
+                </li>
+                {allMembers.map((member, index) => {
+                  return (
+                    <li
+                      key={index}
+                      onClick={() =>
+                        handleUserProfileClick(member.user.username)
+                      }
+                    >
+                      {member.user.fullName}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              "Fetching Group Data..."
+            )}
           </Box>
           <Button className="btn" onClick={onAddMembersModalOpen}>
             Add More Members
