@@ -2,7 +2,7 @@ import "./Home.css";
 import Nav from "../app/Nav";
 import CodeGroupsList from "./CodeGroupsList";
 import Files from "./Files";
-import Activities from "./Activities";
+import Notifications from "../app/Notification";
 import Footer from "../app/Footer";
 
 function Home() {
@@ -15,7 +15,7 @@ function Home() {
           <Files />
         </div>
         <div id="home-body-right">
-          <Activities />
+          <Notifications />
         </div>
       </main>
       <Footer />
