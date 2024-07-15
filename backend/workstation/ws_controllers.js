@@ -1,7 +1,43 @@
 const axios = require("axios");
 const prisma = require("../prisma/prisma_client");
 require("dotenv").config();
-const { userSocketMap } = require("../notification/socket");
+const { userSocketMap, rateLimiter } = require("../notification/socket");
+const {
+  notif_categories,
+} = require("../notification/notif_categories_backend");
+
+const findFile = async (fileId) => {
+  return await prisma.file.findUnique({
+    where: {
+      id: parseInt(fileId),
+    },
+    include: {
+      user: true,
+      codeGroup: {
+        include: {
+          members: true,
+        },
+      },
+    },
+  });
+};
+const findUser = async (userId) => {
+  return await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+};
+const findGroup = async (groupId) => {
+  return await prisma.codeGroup.findUnique({
+    where: {
+      id: parseInt(groupId),
+    },
+    include: {
+      members: true,
+    },
+  });
+};
 
 //Create New File
 exports.createNewFile = async (req, res) => {
@@ -57,10 +93,21 @@ exports.createNewFile = async (req, res) => {
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
-        userSocketId.emit("notify_group_create_file", {
-          message: `User ${userId} has created a file: ${newFile.fileName}`,
-          userId: allUserIds[user_id],
-          senderId: userId,
+        try {
+          await rateLimiter.consume(allUserIds[user_id]);
+
+          userSocketId.emit("notify_group", {
+            message: `User ${userId} has created a file: ${newFile.fileName}`,
+          });
+        } catch (rejRes) {
+          socket.emit("Too many notifications. Please try again later.");
+        }
+      }
+
+      await prisma.notification.create({
+        data: {
+          message: `${notif_sender.fullName} has created a file: ${newFile.fileName}`,
+          category: notif_categories.file_created,
           fileId: newFile.id,
           groupId: group.id,
           category: "file_created",
@@ -174,12 +221,23 @@ exports.updateFileDetails = async (req, res) => {
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
-        userSocketId.emit("notify_group_update_file", {
-          message: `User ${userId} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
-          userId: allUserIds[user_id],
-          senderId: userId,
+        try {
+          await rateLimiter.consume(allUserIds[user_id]);
+
+          userSocketId.emit("notify_group", {
+            message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
+          });
+        } catch (rejRes) {
+          socket.emit("Too many notifications. Please try again later.");
+        }
+      }
+
+      await prisma.notification.create({
+        data: {
+          message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
+          category: notif_categories.file_updated,
           fileId: file.id,
-          category: "file_updated",
+          groupId: file.codeGroup.id,
           isImportant: true,
         });
       }
@@ -242,10 +300,19 @@ exports.deleteFile = async (req, res) => {
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
-        userSocketId.emit("notify_group_delete_file", {
-          message: `User ${userId} has deleted file: ${file.fileName} in group: ${group.groupName}`,
-          userId: allUserIds[user_id],
-          senderId: userId,
+        try {
+          await rateLimiter.consume(allUserIds[user_id]);
+          userSocketId.emit("notify_group", {
+            message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
+          });
+        } catch (rejRes) {
+          socket.emit("Too many notifications. Please try again later.");
+        }
+      }
+      await prisma.notification.create({
+        data: {
+          message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
+          category: notif_categories.file_deleted,
           fileId: file.id,
           groupId: group.id,
           category: "file_deleted",
