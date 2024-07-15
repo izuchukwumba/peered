@@ -1,6 +1,43 @@
 const axios = require("axios");
 const prisma = require("../prisma/prisma_client");
 require("dotenv").config();
+const { userSocketMap, rateLimiter } = require("../notification/socket");
+const {
+  notif_categories,
+} = require("../notification/notif_categories_backend");
+
+const findFile = async (fileId) => {
+  return await prisma.file.findUnique({
+    where: {
+      id: parseInt(fileId),
+    },
+    include: {
+      user: true,
+      codeGroup: {
+        include: {
+          members: true,
+        },
+      },
+    },
+  });
+};
+const findUser = async (userId) => {
+  return await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+};
+const findGroup = async (groupId) => {
+  return await prisma.codeGroup.findUnique({
+    where: {
+      id: parseInt(groupId),
+    },
+    include: {
+      members: true,
+    },
+  });
+};
 
 //Create New File
 exports.createNewFile = async (req, res) => {
@@ -49,6 +86,35 @@ exports.createNewFile = async (req, res) => {
         },
       },
     });
+
+    //Notify group members about file creation
+    const userIds = group.members.map((member) => member.userId);
+    const allUserIds = [...userIds, group.creatorId];
+    for (const user_id in allUserIds) {
+      const userSocketId = userSocketMap.get(allUserIds[user_id]);
+      if (userSocketId) {
+        try {
+          await rateLimiter.consume(allUserIds[user_id]);
+
+          userSocketId.emit("notify_group", {
+            message: `User ${userId} has created a file: ${newFile.fileName}`,
+          });
+        } catch (rejRes) {
+          socket.emit("Too many notifications. Please try again later.");
+        }
+      }
+
+      await prisma.notification.create({
+        data: {
+          message: `${notif_sender.fullName} has created a file: ${newFile.fileName}`,
+          category: notif_categories.file_created,
+          fileId: newFile.id,
+          groupId: group.id,
+          category: "file_created",
+          isImportant: true,
+        });
+      }
+    }
     return res.status(201).json({
       message: "File created successfully",
       file: newFile,
@@ -112,12 +178,20 @@ exports.getFileDetails = async (req, res) => {
 //Update File
 exports.updateFileDetails = async (req, res) => {
   const { fileId } = req.params;
+  const userId = req.user.id;
   const { newFileName, newFileContent } = req.body;
 
   try {
     const file = await prisma.file.findUnique({
       where: {
         id: parseInt(fileId),
+      },
+      include: {
+        codeGroup: {
+          include: {
+            members: true,
+          },
+        },
       },
     });
     if (!file) {
@@ -141,7 +215,34 @@ exports.updateFileDetails = async (req, res) => {
       data: updatedFileData,
     });
 
-    res.status(201).json(updatedFile);
+    //Notify group members about file update
+    const userIds = file.codeGroup.members.map((member) => member.userId);
+    const allUserIds = [...userIds, file.codeGroup.creatorId];
+    for (const user_id in allUserIds) {
+      const userSocketId = userSocketMap.get(allUserIds[user_id]);
+      if (userSocketId) {
+        try {
+          await rateLimiter.consume(allUserIds[user_id]);
+
+          userSocketId.emit("notify_group", {
+            message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
+          });
+        } catch (rejRes) {
+          socket.emit("Too many notifications. Please try again later.");
+        }
+      }
+
+      await prisma.notification.create({
+        data: {
+          message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
+          category: notif_categories.file_updated,
+          fileId: file.id,
+          groupId: file.codeGroup.id,
+          isImportant: true,
+        });
+      }
+    }
+    return res.status(201).json(updatedFile);
   } catch (error) {
     res.status(500).json({ error: "Error updating file" });
   }
@@ -193,6 +294,32 @@ exports.deleteFile = async (req, res) => {
         id: parseInt(fileId),
       },
     });
+    //Notify group members about file deletion
+    const userIds = group.members.map((member) => member.userId);
+    const allUserIds = [...userIds, group.creatorId];
+    for (const user_id in allUserIds) {
+      const userSocketId = userSocketMap.get(allUserIds[user_id]);
+      if (userSocketId) {
+        try {
+          await rateLimiter.consume(allUserIds[user_id]);
+          userSocketId.emit("notify_group", {
+            message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
+          });
+        } catch (rejRes) {
+          socket.emit("Too many notifications. Please try again later.");
+        }
+      }
+      await prisma.notification.create({
+        data: {
+          message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
+          category: notif_categories.file_deleted,
+          fileId: file.id,
+          groupId: group.id,
+          category: "file_deleted",
+          isImportant: true,
+        });
+      }
+    }
     return res.status(200).json({
       message: `File named ${file.fileName} has been deleted`,
     });
@@ -219,6 +346,6 @@ exports.runCode = async (req, res) => {
     const response = await axios.post(api_url, params);
     res.status(200).json(response.data);
   } catch (error) {
-    res.status(500).json({ error: "Error deleting file. Try again" });
+    res.status(500).json({ error: "Error running file. Try again" });
   }
 };

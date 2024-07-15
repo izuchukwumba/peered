@@ -1,5 +1,10 @@
 const axios = require("axios");
 const prisma = require("../prisma/prisma_client");
+const { userSocketMap, rateLimiter } = require("../notification/socket");
+const {
+  notif_categories,
+  socket_names,
+} = require("../notification/notif_categories_backend");
 require("dotenv").config();
 
 //Get All Groups Created by User
@@ -247,6 +252,34 @@ exports.updateGroupDetails = async (req, res) => {
                   connect: {
                     id: userId,
                   },
+                },
+              },
+            });
+
+            const userSocketId = userSocketMap.get(potentialMember.id);
+            if (userSocketId) {
+              try {
+                await rateLimiter.consume(potentialMember.id);
+
+                userSocketId.emit(socket_names.added_user_to_group, {
+                  message: `You have been added to the code group: ${group.groupName}`,
+                });
+              } catch (rejRes) {
+                socket.emit("Too many notifications. Please try again later.");
+              }
+            }
+            await prisma.notification.create({
+              data: {
+                message: `You have been added to the code group: ${group.groupName}`,
+                category: notif_categories.added_to_group,
+                isImportant: true,
+                isOffline: !userSocketId && true,
+                groupId: group.id,
+                sender: {
+                  connect: { id: userId },
+                },
+                receiver: {
+                  connect: { id: potentialMember.id },
                 },
               },
             });
