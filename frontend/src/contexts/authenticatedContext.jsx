@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 const authenticatedContext = createContext();
 export const useAuthenticatedContext = () => useContext(authenticatedContext);
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const AuthenticatedContextProvider = ({ children }) => {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
@@ -13,7 +12,6 @@ export const AuthenticatedContextProvider = ({ children }) => {
 
   const checkAuth = async () => {
     let token = localStorage.getItem("jwt");
-    console.log(token);
     try {
       if (token) {
         setIsUserAuthenticated(true);
@@ -22,7 +20,7 @@ export const AuthenticatedContextProvider = ({ children }) => {
         navigate("/login");
       }
     } catch (error) {
-      console.log("Failed to authenticate request:", error);
+      console.error("Failed to authenticate request:", error);
     }
   };
 

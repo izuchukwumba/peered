@@ -1,12 +1,13 @@
 import { useState } from "react";
+import { Button } from "@chakra-ui/react";
 import Cookies from "js-cookie";
 import { useAuthenticatedContext } from "../contexts/authenticatedContext";
 import "./Footer.css";
 
 function Footer() {
   const [error, setError] = useState("");
-
   const { logout, isUserAuthenticated } = useAuthenticatedContext();
+
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleLogout = () => {
@@ -34,9 +35,10 @@ function Footer() {
   return (
     <div id="Footer">
       {isUserAuthenticated && "Logged in"}
-      <button className="btn" onClick={handleLogout}>
+      <Button colorScheme="red" className="btn" onClick={handleLogout}>
         Logout
-      </button>
+      </Button>
+      {error && <div style={{ color: "red" }}>{error}</div>}
     </div>
   );
 }
