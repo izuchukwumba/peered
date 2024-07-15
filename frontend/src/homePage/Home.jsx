@@ -2,7 +2,7 @@ import "./Home.css";
 import Nav from "../app/Nav";
 import CodeGroupsList from "./CodeGroupsList";
 import Files from "./Files";
-import Notifications from "../app/Notification";
+import Notifications from "../notification/Notification";
 import Footer from "../app/Footer";
 
 function Home() {
