@@ -33,7 +33,7 @@ exports.getNotifications = async (req, res) => {
   try {
     const notifications = await prisma.notification.findMany({
       where: {
-        userId: userId,
+        receiverId: userId,
       },
       orderBy: {
         id: "desc",
@@ -43,6 +43,42 @@ exports.getNotifications = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       error: "Error fetching notifications",
+    });
+  }
+};
+
+exports.updateReadNotifications = async (req, res) => {
+  const { notifId } = req.params;
+  const userId = req.user.id;
+  try {
+    const updatedNotif = await prisma.notification.update({
+      where: {
+        id: parseInt(notifId),
+        receiverId: userId,
+      },
+      data: { isRead: true },
+    });
+    return res.status(201).json(updatedNotif);
+  } catch (error) {
+    res.status(500).json({
+      error: "Error updating notifications",
+    });
+  }
+};
+
+exports.updateAllOfflineNotifications = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const updatedNotif = await prisma.notification.updateMany({
+      where: {
+        receiverId: userId,
+      },
+      data: { isOffline: false },
+    });
+    return res.status(201).json(updatedNotif);
+  } catch (error) {
+    res.status(500).json({
+      error: "Error updating offline notifications",
     });
   }
 };

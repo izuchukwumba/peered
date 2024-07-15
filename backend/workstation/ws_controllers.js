@@ -1,7 +1,40 @@
 const axios = require("axios");
 const prisma = require("../prisma/prisma_client");
 require("dotenv").config();
-const { userSocketMap } = require("../notification/socket");
+const { userSocketMap, rateLimiter } = require("../notification/socket");
+
+const findFile = async (fileId) => {
+  return await prisma.file.findUnique({
+    where: {
+      id: parseInt(fileId),
+    },
+    include: {
+      user: true,
+      codeGroup: {
+        include: {
+          members: true,
+        },
+      },
+    },
+  });
+};
+const findUser = async (userId) => {
+  return await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+};
+const findGroup = async (groupId) => {
+  return await prisma.codeGroup.findUnique({
+    where: {
+      id: parseInt(groupId),
+    },
+    include: {
+      members: true,
+    },
+  });
+};
 
 //Create New File
 exports.createNewFile = async (req, res) => {
@@ -16,14 +49,7 @@ exports.createNewFile = async (req, res) => {
   }
 
   try {
-    const group = await prisma.codeGroup.findUnique({
-      where: {
-        id: parseInt(groupId),
-      },
-      include: {
-        members: true,
-      },
-    });
+    const group = await findGroup(groupId);
     if (!group) {
       return res.status(404).json({
         error: "Group not found",
@@ -52,21 +78,41 @@ exports.createNewFile = async (req, res) => {
     });
 
     //Notify group members about file creation
+    const notif_sender = await findUser(userId);
     const userIds = group.members.map((member) => member.userId);
-    const allUserIds = [...userIds, group.creatorId];
+    const allUserIds = [...userIds, group.creatorId].filter(
+      (id) => id !== userId
+    );
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
-        userSocketId.emit("notify_group_create_file", {
-          message: `User ${userId} has created a file: ${newFile.fileName}`,
-          userId: allUserIds[user_id],
-          senderId: userId,
+        try {
+          await rateLimiter.consume(allUserIds[user_id]);
+
+          userSocketId.emit("notify_group", {
+            message: `User ${userId} has created a file: ${newFile.fileName}`,
+          });
+        } catch (rejRes) {
+          socket.emit("Too many notifications. Please try again later.");
+        }
+      }
+
+      await prisma.notification.create({
+        data: {
+          message: `${notif_sender.fullName} has created a file: ${newFile.fileName}`,
+          category: "file_created",
           fileId: newFile.id,
           groupId: group.id,
-          category: "file_created",
           isImportant: true,
-        });
-      }
+          isOffline: !userSocketId && true,
+          sender: {
+            connect: { id: userId },
+          },
+          receiver: {
+            connect: { id: allUserIds[user_id] },
+          },
+        },
+      });
     }
     return res.status(201).json({
       message: "File created successfully",
@@ -85,14 +131,7 @@ exports.getFileDetails = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const group = await prisma.codeGroup.findUnique({
-      where: {
-        id: parseInt(groupId),
-      },
-      include: {
-        members: true,
-      },
-    });
+    const group = await findGroup(groupId);
 
     if (!group) {
       return res.status(404).json({
@@ -107,15 +146,7 @@ exports.getFileDetails = async (req, res) => {
       });
     }
 
-    const file = await prisma.file.findUnique({
-      where: {
-        id: parseInt(fileId),
-      },
-      include: {
-        user: true,
-        codeGroup: true,
-      },
-    });
+    const file = await findFile(fileId);
     if (!file) {
       return res.status(404).json({
         error: "File not found",
@@ -135,18 +166,7 @@ exports.updateFileDetails = async (req, res) => {
   const { newFileName, newFileContent } = req.body;
 
   try {
-    const file = await prisma.file.findUnique({
-      where: {
-        id: parseInt(fileId),
-      },
-      include: {
-        codeGroup: {
-          include: {
-            members: true,
-          },
-        },
-      },
-    });
+    const file = await findFile(fileId);
     if (!file) {
       return res.status(404).json({
         error: "File not found",
@@ -169,21 +189,43 @@ exports.updateFileDetails = async (req, res) => {
     });
 
     //Notify group members about file update
+    const notif_sender = await findUser(userId);
     const userIds = file.codeGroup.members.map((member) => member.userId);
-    const allUserIds = [...userIds, file.codeGroup.creatorId];
+    const allUserIds = [...userIds, file.codeGroup.creatorId].filter(
+      (id) => id != userId
+    );
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
-        userSocketId.emit("notify_group_update_file", {
-          message: `User ${userId} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
-          userId: allUserIds[user_id],
-          senderId: userId,
-          fileId: file.id,
-          category: "file_updated",
-          isImportant: true,
-        });
+        try {
+          await rateLimiter.consume(allUserIds[user_id]);
+
+          userSocketId.emit("notify_group", {
+            message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
+          });
+        } catch (rejRes) {
+          socket.emit("Too many notifications. Please try again later.");
+        }
       }
+
+      await prisma.notification.create({
+        data: {
+          message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
+          category: "file_updated",
+          fileId: file.id,
+          groupId: file.codeGroup.id,
+          isImportant: true,
+          isOffline: !userSocketId && true,
+          sender: {
+            connect: { id: userId },
+          },
+          receiver: {
+            connect: { id: allUserIds[user_id] },
+          },
+        },
+      });
     }
+
     return res.status(201).json(updatedFile);
   } catch (error) {
     res.status(500).json({ error: "Error updating file" });
@@ -196,14 +238,7 @@ exports.deleteFile = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const group = await prisma.codeGroup.findUnique({
-      where: {
-        id: parseInt(groupId),
-      },
-      include: {
-        members: true,
-      },
-    });
+    const group = await findGroup(groupId);
     if (!group) {
       return res.status(404).json({
         error: "Group not found",
@@ -215,11 +250,7 @@ exports.deleteFile = async (req, res) => {
         error: "You do not have access to this group",
       });
     }
-    const file = await prisma.file.findUnique({
-      where: {
-        id: parseInt(fileId),
-      },
-    });
+    const file = await findFile(fileId);
     if (!file) {
       return res.status(404).json({
         error: "File not found",
@@ -237,27 +268,45 @@ exports.deleteFile = async (req, res) => {
       },
     });
     //Notify group members about file deletion
+    const notif_sender = await findUser(userId);
     const userIds = group.members.map((member) => member.userId);
-    const allUserIds = [...userIds, group.creatorId];
+    const allUserIds = [...userIds, group.creatorId].filter(
+      (id) => id != userId
+    );
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
-        userSocketId.emit("notify_group_delete_file", {
-          message: `User ${userId} has deleted file: ${file.fileName} in group: ${group.groupName}`,
-          userId: allUserIds[user_id],
-          senderId: userId,
+        try {
+          await rateLimiter.consume(allUserIds[user_id]);
+          userSocketId.emit("notify_group", {
+            message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
+          });
+        } catch (rejRes) {
+          socket.emit("Too many notifications. Please try again later.");
+        }
+      }
+      await prisma.notification.create({
+        data: {
+          message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
+          category: "file_deleted",
           fileId: file.id,
           groupId: group.id,
-          category: "file_deleted",
           isImportant: true,
-        });
-      }
+          isOffline: !userSocketId && true,
+          sender: {
+            connect: { id: userId },
+          },
+          receiver: {
+            connect: { id: allUserIds[user_id] },
+          },
+        },
+      });
     }
     return res.status(200).json({
       message: `File named ${file.fileName} has been deleted`,
     });
   } catch (error) {
-    res.status(500).json({ error: "Failed to execute code" });
+    res.status(500).json({ error: "Failed to delete file" });
   }
 };
 
@@ -282,3 +331,4 @@ exports.runCode = async (req, res) => {
     res.status(500).json({ error: "Error running file. Try again" });
   }
 };
+console;
