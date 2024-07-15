@@ -2,6 +2,7 @@ const axios = require("axios");
 const prisma = require("../prisma/prisma_client");
 require("dotenv").config();
 const { userSocketMap, rateLimiter } = require("../notification/socket");
+const { notif_categories } = require("../notification/notif_categories");
 
 const findFile = async (fileId) => {
   return await prisma.file.findUnique({
@@ -100,7 +101,7 @@ exports.createNewFile = async (req, res) => {
       await prisma.notification.create({
         data: {
           message: `${notif_sender.fullName} has created a file: ${newFile.fileName}`,
-          category: "file_created",
+          category: notif_categories.file_created,
           fileId: newFile.id,
           groupId: group.id,
           isImportant: true,
@@ -211,7 +212,7 @@ exports.updateFileDetails = async (req, res) => {
       await prisma.notification.create({
         data: {
           message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
-          category: "file_updated",
+          category: notif_categories.file_updated,
           fileId: file.id,
           groupId: file.codeGroup.id,
           isImportant: true,
@@ -288,7 +289,7 @@ exports.deleteFile = async (req, res) => {
       await prisma.notification.create({
         data: {
           message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
-          category: "file_deleted",
+          category: notif_categories.file_deleted,
           fileId: file.id,
           groupId: group.id,
           isImportant: true,
