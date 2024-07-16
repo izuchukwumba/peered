@@ -1,5 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import React, { createContext, useState, useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const authenticatedContext = createContext();
 export const useAuthenticatedContext = () => useContext(authenticatedContext);
@@ -10,7 +12,6 @@ export const AuthenticatedContextProvider = ({ children }) => {
 
   const checkAuth = async () => {
     let token = localStorage.getItem("jwt");
-    console.log(token);
     try {
       if (token) {
         setIsUserAuthenticated(true);
@@ -19,7 +20,7 @@ export const AuthenticatedContextProvider = ({ children }) => {
         navigate("/login");
       }
     } catch (error) {
-      console.log("Failed to authenticate request:", error);
+      console.error("Failed to authenticate request:", error);
     }
   };
 
@@ -43,3 +44,5 @@ export const AuthenticatedContextProvider = ({ children }) => {
     </authenticatedContext.Provider>
   );
 };
+
+export default AuthenticatedContextProvider;

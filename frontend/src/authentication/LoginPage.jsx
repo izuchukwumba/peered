@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Button } from "@chakra-ui/react";
 import Cookies from "js-cookie";
 import { useAuthenticatedContext } from "../contexts/authenticatedContext";
 
@@ -11,12 +11,9 @@ function LoginPage() {
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-  const navigate = useNavigate();
-
   const handleLogin = async (event) => {
     event.preventDefault();
     setError("");
-
     try {
       const response = await fetch(`${BACKEND_URL}/auth/login`, {
         method: "POST",
@@ -24,7 +21,6 @@ function LoginPage() {
         body: JSON.stringify({ username, password }),
         credentials: "include",
       });
-
       if (!response.ok) {
         const errorResponse = await response.json();
         throw new Error(
@@ -32,7 +28,6 @@ function LoginPage() {
         );
       }
       const data = await response.json();
-
       //Get auth cookies and store in local storage
       Cookies.set("jwt", data.token, { expires: 1, sameSite: "Lax" });
       localStorage.setItem("jwt", data.token);
@@ -71,12 +66,14 @@ function LoginPage() {
           />
         </div>
 
-        <button className="btn">Login</button>
+        <Button type="submit" className="btn">
+          Login
+        </Button>
       </form>
       OR
-      <button className="btn" onClick={handleLoginWithGithub}>
+      <Button className="btn" onClick={handleLoginWithGithub}>
         Login with Github
-      </button>
+      </Button>
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
