@@ -2,6 +2,29 @@ const axios = require("axios");
 const prisma = require("../prisma/prisma_client");
 require("dotenv").config();
 
+const checkGroup = async (groupId, userId) => {
+  const group = await prisma.codeGroup.findUnique({
+    where: {
+      id: parseInt(groupId),
+    },
+    include: {
+      members: true,
+    },
+  });
+  if (!group) {
+    return res.status(404).json({
+      error: "Group not found",
+    });
+  }
+  const isMember = group.members.some((member) => member.userId === userId);
+  if (!isMember && group.creatorId !== userId) {
+    return res.status(403).json({
+      error: "You do not have access to this group",
+    });
+  }
+  return group;
+};
+
 //Create New File
 exports.createNewFile = async (req, res) => {
   const { groupId } = req.params;
@@ -15,25 +38,7 @@ exports.createNewFile = async (req, res) => {
   }
 
   try {
-    const group = await prisma.codeGroup.findUnique({
-      where: {
-        id: parseInt(groupId),
-      },
-      include: {
-        members: true,
-      },
-    });
-    if (!group) {
-      return res.status(404).json({
-        error: "Group not found",
-      });
-    }
-    const isMember = group.members.some((member) => member.userId === userId);
-    if (!isMember && group.creatorId !== userId) {
-      return res.status(403).json({
-        error: "You do not have access to this group",
-      });
-    }
+    await checkGroup(groupId, userId);
     const newFile = await prisma.file.create({
       data: {
         fileName: newFileName,
@@ -66,28 +71,7 @@ exports.getFileDetails = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const group = await prisma.codeGroup.findUnique({
-      where: {
-        id: parseInt(groupId),
-      },
-      include: {
-        members: true,
-      },
-    });
-
-    if (!group) {
-      return res.status(404).json({
-        error: "Group not found",
-      });
-    }
-
-    const isMember = group.members.some((member) => member.userId === userId);
-    if (!isMember && group.creatorId !== userId) {
-      return res.status(403).json({
-        error: "you do not have access to this group",
-      });
-    }
-
+    await checkGroup(groupId, userId);
     const file = await prisma.file.findUnique({
       where: {
         id: parseInt(fileId),
@@ -102,7 +86,6 @@ exports.getFileDetails = async (req, res) => {
         error: "File not found",
       });
     }
-
     return res.status(200).json(file);
   } catch (error) {
     res.status(500).json({ error: "Failed to get file details." });
@@ -153,25 +136,7 @@ exports.deleteFile = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const group = await prisma.codeGroup.findUnique({
-      where: {
-        id: parseInt(groupId),
-      },
-      include: {
-        members: true,
-      },
-    });
-    if (!group) {
-      return res.status(404).json({
-        error: "Group not found",
-      });
-    }
-    const isMember = group.members.some((member) => member.userId === userId);
-    if (!isMember && group.creatorId !== userId) {
-      return res.status(403).json({
-        error: "You do not have access to this group",
-      });
-    }
+    const group = await checkGroup(groupId, userId);
     const file = await prisma.file.findUnique({
       where: {
         id: parseInt(fileId),
