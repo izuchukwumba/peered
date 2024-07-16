@@ -97,7 +97,7 @@ function LoginPage() {
         Login with Github
       </Button>
       <Box>
-        Dont have an account
+        Don't have an account?
         <Button onClick={() => navigate("/signup`")}>Sign Up Now</Button>
       </Box>
       {error && <p style={{ color: "red" }}>{error}</p>}
