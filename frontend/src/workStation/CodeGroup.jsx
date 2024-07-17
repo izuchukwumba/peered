@@ -91,9 +91,11 @@ function CodeGroup() {
   };
 
   function handleAddNewMemberToList() {
-    if (newMemberInput) {
+    if (newMemberInput && !newMembers.includes(newMemberInput)) {
       setNewMembers([...newMembers, newMemberInput]);
       setNewMemberInput("");
+    } else {
+      setError("Member is already added to list, or input is empty.");
     }
   }
 
@@ -109,7 +111,7 @@ function CodeGroup() {
         options
       );
     } catch (error) {
-      setError("Error Creating Group. Try again");
+      setError("Error Creating File. Try again");
     } finally {
       setNewFileName("");
       fetchGroupDetails();
@@ -257,7 +259,7 @@ function CodeGroup() {
                 placeholder="type username"
               />
               <Button variant="outline" onClick={handleAddNewMemberToList}>
-                add member
+                Add member
               </Button>
               {newMembers.length > 0 && (
                 <ul>
@@ -304,7 +306,7 @@ function CodeGroup() {
                 placeholder="type username"
               />
               <Button variant="outline" onClick={handleAddNewMemberToList}>
-                add to queue
+                Add to queue
               </Button>
               {newMembers.length > 0 && (
                 <ul>
