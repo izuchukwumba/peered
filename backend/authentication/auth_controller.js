@@ -150,6 +150,112 @@ exports.githubCallback = async (req, res) => {
   }
 };
 
+//Update User Profile
+exports.updateProfile = async (req, res) => {
+  const { username } = req.params;
+  const { newFullName, newImageUrl, availability, skills, interests } =
+    req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        username: username,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    let newProfileData = {};
+
+    if (newFullName) {
+      newProfileData.fullName = newFullName;
+    }
+    if (newImageUrl) {
+      newProfileData.imageUrl = newImageUrl;
+    }
+    if (availability) {
+      newProfileData.availability = availability;
+    }
+
+    const updatedUserProfile = await prisma.user.update({
+      where: {
+        username: username,
+      },
+      data: newProfileData,
+    });
+
+    if (interests && interests.length > 0) {
+      await prisma.interest.deleteMany({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      const InterestData = interests.map((interest) => ({
+        interest: interest,
+        userId: user.id,
+      }));
+      await prisma.interest.creatMany({
+        data: InterestData,
+      });
+    }
+    if (skills && skills.length > 0) {
+      await prisma.skill.deleteMany({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      const skillData = skills.map((skill) => ({
+        skill: skill,
+        userId: user.id,
+      }));
+      await prisma.skill.creatMany({
+        data: skillData,
+      });
+    }
+    const updatedProfile = await prisma.user.findUnique({
+      where: {
+        username: username,
+      },
+    });
+    res.status(200).json(updatedProfile);
+  } catch (error) {
+    res.status(500).json({
+      error: "Error updating user profile",
+    });
+  }
+};
+
+//Fetch User Info
+exports.getUserInfo = async (req, res) => {
+  const { username } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        username: username,
+      },
+      include: {
+        skills: true,
+        interests: true,
+        codeGroups: true,
+        groupMemberships: true,
+        addedGroups: true,
+        files: true,
+      },
+    });
+    return res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({
+      error: "Error fetching user info",
+    });
+  }
+};
+
+//Log Out
 exports.logout = (req, res) => {
   res.clearCookie("jwt", { httpOnly: true });
   res.redirect(`${FRONTEND_URL}/`);

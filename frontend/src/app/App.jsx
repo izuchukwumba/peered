@@ -9,6 +9,9 @@ import { AuthenticatedContextProvider } from "../contexts/authenticatedContext";
 import ProtectedHomeRoute from "../authentication/ProtectedHomeRoute";
 import CodeGroup from "../workStation/CodeGroup";
 import WorkStation from "../workStation/WorkStation";
+import ProfileSetUp from "../authentication/ProfileSetUp";
+import ProfilePage from "../authentication/ProfilePage";
+import ProfileEdit from "../authentication/ProfileEdit";
 import { Box } from "@chakra-ui/react";
 
 function App() {
@@ -29,7 +32,16 @@ function App() {
                 }
               />
               <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<SignUp />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/user/:username/profile" element={<ProfilePage />} />
+              <Route
+                path="/user/:username/edit-profile"
+                element={<ProfileEdit />}
+              />
+              <Route
+                path="/user/:username/profile-build"
+                element={<ProfileSetUp />}
+              />
               <Route path="/group/:groupId" element={<CodeGroup />} />
               <Route
                 path="/group/:groupId/files/:fileId/workstation"

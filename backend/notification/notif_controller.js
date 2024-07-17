@@ -1,0 +1,48 @@
+const prisma = require("../prisma/prisma_client");
+
+exports.saveNewNotification = async (req, res) => {
+  const { data } = req.body;
+  const receiverId = req.user.id;
+  if (!data) {
+    return res
+      .status(400)
+      .json({ error: "Error. Notification data is invalid" });
+  }
+  try {
+    const newNotification = await prisma.notification.create({
+      data: {
+        data,
+        user: {
+          connect: { id: receiverId },
+        },
+      },
+    });
+    return res.status(201).json({
+      message: "New notification added",
+      notification: newNotification,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: "Failed to save notification",
+    });
+  }
+};
+
+exports.getNotifications = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const notifications = await prisma.notification.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: {
+        id: "desc",
+      },
+    });
+    res.status(200).json(notifications);
+  } catch (error) {
+    res.status(500).json({
+      error: "Error fetching notifications",
+    });
+  }
+};
