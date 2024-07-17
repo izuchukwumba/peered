@@ -1,7 +1,10 @@
 const axios = require("axios");
 const prisma = require("../prisma/prisma_client");
 const { userSocketMap, rateLimiter } = require("../notification/socket");
-const { notif_categories } = require("../notification/notif_categories");
+const {
+  notif_categories,
+  socket_names,
+} = require("../notification/notif_categories_backend");
 require("dotenv").config();
 
 //Get All Groups Created by User
@@ -258,7 +261,7 @@ exports.updateGroupDetails = async (req, res) => {
               try {
                 await rateLimiter.consume(potentialMember.id);
 
-                userSocketId.emit("added_user_to_group", {
+                userSocketId.emit(socket_names.added_user_to_group, {
                   message: `You have been added to the code group: ${group.groupName}`,
                 });
               } catch (rejRes) {
