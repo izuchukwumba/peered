@@ -28,8 +28,8 @@ model CodeGroup {
   id                     Int           @id @default(autoincrement())
   groupName              String
   imgUrl                 String?
-  preferred_category     String?
   preferred_availability String?
+  category               Interest[]
   preferred_skills       Skill[]
   creatorId              Int
   createdAt              DateTime      @default(now())
@@ -72,22 +72,23 @@ model Skill {
 }
 
 model Interest {
-  id       Int    @id @default(autoincrement())
-  Interest String
-  User     User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   Int?
+  id          Int        @id @default(autoincrement())
+  Interest    String
+  User        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int?
+  CodeGroup   CodeGroup? @relation(fields: [codeGroupId], references: [id])
+  codeGroupId Int?
 }
 
 model Notification {
-  id          Int      @id @default(autoincrement())
-  message     String
-  category    String
-  isImportant Boolean
-  isRead      Boolean  @default(false)
-  isOffline   Boolean  @default(false)
-  groupId     Int?
-  fileId      Int?
-  senderId    Int?
-  receiverId  Int
-  createdAt   DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  message    String
+  category   String
+  isRead     Boolean  @default(false)
+  isOffline  Boolean  @default(false)
+  groupId    Int?
+  fileId     Int?
+  senderId   Int?
+  receiverId Int
+  createdAt  DateTime @default(now())
 }
