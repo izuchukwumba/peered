@@ -20,8 +20,13 @@ function Terminal({ editorRef, language, version, fileContent }) {
       version: version,
       codeBase: fileContent,
     };
-    if (!sourceCode) return;
     try {
+      if (!sourceCode) {
+        throw new Error(
+          "No code found. Write some code before attempting to run."
+        );
+      }
+
       setisLoading(true);
       const response = await axios.post(
         `${BACKEND_URL}/group/${groupId}/files/${fileId}/workstation/run-code`,

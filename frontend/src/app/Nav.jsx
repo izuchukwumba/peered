@@ -139,37 +139,38 @@ function Nav() {
           <ModalBody>
             <div>
               <div id="notifs">
-                {notifications.length > 0 &&
-                  notifications.map((notif, index) => {
-                    return (
-                      <div
-                        key={index}
-                        onClick={
-                          notif.category === notif_categories.added_to_group ||
-                          notif.category === notif_categories.file_deleted
-                            ? () => goToCodeGroup(notif.id, notif.groupId)
-                            : notif.category ===
-                                notif_categories.file_created ||
-                              notif.category === notif_categories.file_updated
-                            ? () =>
-                                goToFile(notif.id, notif.groupId, notif.fileId)
-                            : ""
-                        }
-                        style={{
-                          fontWeight: !notif.isRead ? "bold" : "normal",
-                          color: notif.isOffline ? "gold" : "white",
-                        }}
-                      >
-                        {notif.message}
-                      </div>
-                    );
-                  })}
+                {offlineNotifications.length > 0
+                  ? notifications.map((notif, index) => {
+                      return (
+                        <div
+                          key={index}
+                          onClick={
+                            notif.category ===
+                              notif_categories.added_to_group ||
+                            notif.category === notif_categories.file_deleted
+                              ? () => goToCodeGroup(notif.id, notif.groupId)
+                              : notif.category ===
+                                  notif_categories.file_created ||
+                                notif.category === notif_categories.file_updated
+                              ? () =>
+                                  goToFile(
+                                    notif.id,
+                                    notif.groupId,
+                                    notif.fileId
+                                  )
+                              : ""
+                          }
+                          style={{
+                            fontWeight: !notif.isRead ? "bold" : "normal",
+                            color: notif.isOffline ? "gold" : "white",
+                          }}
+                        >
+                          {notif.message}
+                        </div>
+                      );
+                    })
+                  : "Nothing happened while you were away"}
               </div>
-              {offlineNotifications.length > 0 && (
-                <div style={{ fontSize: "0.8rem", paddingTop: "30px" }}>
-                  Offline notifications shown in gold
-                </div>
-              )}
             </div>
           </ModalBody>
 
