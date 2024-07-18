@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Nav.css";
 import axios from "axios";
+import { notif_categories } from "../notification/notif_categories_frontend";
 import {
   Box,
   Button,
@@ -14,14 +15,30 @@ import {
   ModalOverlay,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useNotifications } from "./NotificationContext";
+import { useNotifications } from "../notification/NotificationContext";
 
 const token = localStorage.getItem("jwt");
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
+export const updateReadNotifs = async (notifId) => {
+  try {
+    const response = await axios.put(
+      `${BACKEND_URL}/notif/${notifId}/update-read-notifications`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
+  } catch (error) {
+    setError("Error updating notification");
+  }
+};
+
 function Nav() {
-  const { notifications, setNotifications, getNotifications } =
-    useNotifications();
+  const { notifications, getNotifications } = useNotifications();
   let offlineNotifications = [];
   offlineNotifications = notifications.filter(
     (notif) => notif.isOffline === true
@@ -50,23 +67,6 @@ function Nav() {
     } finally {
       getNotifications();
       onSecondModalClose();
-    }
-  };
-
-  const updateReadNotifs = async (notifId) => {
-    try {
-      const response = await axios.put(
-        `${BACKEND_URL}/notif/${notifId}/update-read-notifications`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
-      );
-    } catch (error) {
-      setError("Error updating notification");
     }
   };
 
@@ -145,11 +145,12 @@ function Nav() {
                       <div
                         key={index}
                         onClick={
-                          notif.category === "added_to_group" ||
-                          notif.category === "file_deleted"
+                          notif.category === notif_categories.added_to_group ||
+                          notif.category === notif_categories.file_deleted
                             ? () => goToCodeGroup(notif.id, notif.groupId)
-                            : notif.category === "file_created" ||
-                              notif.category === "file_updated"
+                            : notif.category ===
+                                notif_categories.file_created ||
+                              notif.category === notif_categories.file_updated
                             ? () =>
                                 goToFile(notif.id, notif.groupId, notif.fileId)
                             : ""
@@ -164,11 +165,6 @@ function Nav() {
                     );
                   })}
               </div>
-              {offlineNotifications.length > 0 && (
-                <div style={{ fontSize: "0.8rem", paddingTop: "30px" }}>
-                  Offline notifications shown in gold
-                </div>
-              )}
             </div>
           </ModalBody>
 

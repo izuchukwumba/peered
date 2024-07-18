@@ -153,7 +153,7 @@ exports.githubCallback = async (req, res) => {
 //Update User Profile
 exports.updateProfile = async (req, res) => {
   const { username } = req.params;
-  const { newFullName, newImageUrl, availability, skills, categories } =
+  const { newFullName, newImageUrl, availability, skills, interests } =
     req.body;
 
   try {
@@ -187,66 +187,35 @@ exports.updateProfile = async (req, res) => {
       data: newProfileData,
     });
 
-    if (categories && categories.length > 0) {
-      await prisma.user.update({
+    if (interests && interests.length > 0) {
+      await prisma.interest.deleteMany({
         where: {
-          username: username,
-        },
-        data: {
-          categories: {
-            set: [],
-          },
-        },
-      });
-      for (category of categories) {
-        try {
-          await prisma.category.create({
-            data: {
-              category: category,
-              User: {
-                connect: {
-                  username: username,
-                },
-              },
-            },
-          });
-        } catch (error) {
-          res.status(500).json({
-            error: "Error updating categories",
-          });
-        }
-      }
-    }
-    if (skills && skills.length > 0) {
-      await prisma.user.update({
-        where: {
-          username: username,
-        },
-        data: {
-          skills: {
-            set: [],
-          },
+          userId: user.id,
         },
       });
 
-      for (skill of skills) {
-        try {
-          await prisma.skill.create({
-            data: {
-              skill: skill,
-              User: {
-                connect: {
-                  username: username,
-                },
-              },
-            },
-          });
-        } catch (error) {
-          res.status(500).json({
-            error: "Error updating skills",
-          });
-        }
-      }
+      const InterestData = interests.map((interest) => ({
+        interest: interest,
+        userId: user.id,
+      }));
+      await prisma.interest.creatMany({
+        data: InterestData,
+      });
+    }
+    if (skills && skills.length > 0) {
+      await prisma.skill.deleteMany({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      const skillData = skills.map((skill) => ({
+        skill: skill,
+        userId: user.id,
+      }));
+      await prisma.skill.creatMany({
+        data: skillData,
+      });
     }
     const updatedProfile = await prisma.user.findUnique({
       where: {
@@ -271,7 +240,7 @@ exports.getUserInfo = async (req, res) => {
       },
       include: {
         skills: true,
-        categories: true,
+        interests: true,
         codeGroups: true,
         groupMemberships: true,
         addedGroups: true,
