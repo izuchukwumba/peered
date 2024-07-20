@@ -75,7 +75,7 @@ exports.createNewFile = async (req, res) => {
   }
 
   try {
-    await checkGroup(groupId, userId);
+    const group = await checkGroup(groupId, userId);
     const newFile = await prisma.file.create({
       data: {
         fileName: newFileName,
@@ -332,4 +332,3 @@ exports.runCode = async (req, res) => {
     res.status(500).json({ error: "Error running file. Try again" });
   }
 };
-console;
