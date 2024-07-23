@@ -5,6 +5,7 @@ const RateLimiter = require("./rate_limiter");
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const rateLimiter = new RateLimiter(60, 5); //5 requests per 60seconds before it gets ratelimited
+
 const userSocketMap = new Map();
 
 const createSocketServer = (app) => {
@@ -27,10 +28,24 @@ const createSocketServer = (app) => {
     }
   });
 
+  //Rate Limiter middleware
+  io.use(async (socket, next) => {
+    try {
+      await rateLimiter.consume(socket.id);
+      next();
+    } catch (rejRes) {
+      socket.emit(
+        socket_names.rate_limit,
+        "Too many notifications. Try again later"
+      );
+    }
+  });
+
   io.on(socket_names.connection, (socket) => {
     socket.on(socket_names.register, (userId) => {
       userSocketMap.set(userId, socket);
     });
+
     socket.on(socket_names.disconnect, () => {
       for (let [userId, socketId] of userSocketMap.entries()) {
         if (socketId === socket.id) {
@@ -39,7 +54,7 @@ const createSocketServer = (app) => {
         }
       }
     });
-
+    
     socket.on(socket_names.added_user_to_group, async (data) => {
       const { userId, message } = data;
 
@@ -56,7 +71,6 @@ const createSocketServer = (app) => {
 
     socket.on(socket_names.group_notifications, async (data) => {
       const { userIds, message } = data;
-
       userIds.forEach((userId) => {
         const userSocketId = userSocketMap.get(userId);
         if (userSocketId) {
@@ -72,4 +86,4 @@ const createSocketServer = (app) => {
   });
   return { server, io, userSocketMap };
 };
-module.exports = { createSocketServer, userSocketMap };
+module.exports = { createSocketServer, userSocketMap, rateLimiter };

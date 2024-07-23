@@ -94,8 +94,11 @@ exports.createNewFile = async (req, res) => {
     });
 
     //Notify group members about file creation
+    const notif_sender = await findUser(userId);
     const userIds = group.members.map((member) => member.userId);
-    const allUserIds = [...userIds, group.creatorId];
+    const allUserIds = [...userIds, group.creatorId].filter(
+      (id) => id !== userId
+    );
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
@@ -126,6 +129,8 @@ exports.createNewFile = async (req, res) => {
           fileId: newFile.id,
           isOffline: !userSocketId ? true : false,
           groupId: group.id,
+          senderId: userId,
+          receiverId: allUserIds[user_id]
         },
       });
     }
@@ -175,18 +180,7 @@ exports.updateFileDetails = async (req, res) => {
   const { newFileName, newFileContent } = req.body;
 
   try {
-    const file = await prisma.file.findUnique({
-      where: {
-        id: parseInt(fileId),
-      },
-      include: {
-        codeGroup: {
-          include: {
-            members: true,
-          },
-        },
-      },
-    });
+    const file = await findFile(fileId);
     if (!file) {
       return res.status(404).json({
         error: "File not found",
@@ -209,8 +203,11 @@ exports.updateFileDetails = async (req, res) => {
     });
 
     //Notify group members about file update
+    const notif_sender = await findUser(userId);
     const userIds = file.codeGroup.members.map((member) => member.userId);
-    const allUserIds = [...userIds, file.codeGroup.creatorId];
+    const allUserIds = [...userIds, file.codeGroup.creatorId].filter(
+      (id) => id != userId
+    );
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
@@ -241,9 +238,12 @@ exports.updateFileDetails = async (req, res) => {
           fileId: file.id,
           isOffline: !userSocketId ? true : false,
           groupId: file.codeGroup.id,
+          senderId: userId,
+          receiverId: allUserIds[user_id]
         },
       });
     }
+
     return res.status(201).json(updatedFile);
   } catch (error) {
     res.status(500).json({ error: "Error updating file" });
@@ -279,8 +279,11 @@ exports.deleteFile = async (req, res) => {
       },
     });
     //Notify group members about file deletion
+    const notif_sender = await findUser(userId);
     const userIds = group.members.map((member) => member.userId);
-    const allUserIds = [...userIds, group.creatorId];
+    const allUserIds = [...userIds, group.creatorId].filter(
+      (id) => id != userId
+    );
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
@@ -308,6 +311,8 @@ exports.deleteFile = async (req, res) => {
           fileId: file.id,
           isOffline: !userSocketId ? true : false,
           groupId: group.id,
+          enderId: userId,
+          receiverId: allUserIds[user_id]
         },
       });
     }
@@ -315,7 +320,7 @@ exports.deleteFile = async (req, res) => {
       message: `File named ${file.fileName} has been deleted`,
     });
   } catch (error) {
-    res.status(500).json({ error: "Failed to execute code" });
+    res.status(500).json({ error: "Failed to delete file" });
   }
 };
 
