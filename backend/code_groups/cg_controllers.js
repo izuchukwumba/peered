@@ -259,7 +259,7 @@ exports.updateGroupDetails = async (req, res) => {
             const userSocketId = userSocketMap.get(potentialMember.id);
             if (userSocketId) {
               try {
-                await rateLimiter.consume(potentialMember.id);
+                await rateLimiter.useRateLimiter(potentialMember.id);
 
                 userSocketId.emit(socket_names.added_user_to_group, {
                   message: `You have been added to the code group: ${group.groupName}`,
@@ -272,8 +272,7 @@ exports.updateGroupDetails = async (req, res) => {
               data: {
                 message: `You have been added to the code group: ${group.groupName}`,
                 category: notif_categories.added_to_group,
-                isImportant: true,
-                isOffline: !userSocketId && true,
+                isOffline: !userSocketId ? true : false,
                 groupId: group.id,
                 sender: {
                   connect: { id: userId },

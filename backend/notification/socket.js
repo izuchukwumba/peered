@@ -1,9 +1,10 @@
 const { Server } = require("socket.io");
 const http = require("http");
-const { RateLimiterMemory } = require("rate-limiter-flexible");
 const { socket_names } = require("./notif_categories_backend");
-const FRONTEND_URL = process.env.FRONTEND_URL;
+const RateLimiter = require("./rate_limiter");
 
+const FRONTEND_URL = process.env.FRONTEND_URL;
+const rateLimiter = new RateLimiter(60, 5); //5 requests per 60seconds before it gets ratelimited
 const userSocketMap = new Map();
 
 const createSocketServer = (app) => {
@@ -19,13 +20,10 @@ const createSocketServer = (app) => {
   //Rate Limiter middleware
   io.use(async (socket, next) => {
     try {
-      await rateLimiter.consume(socket.id);
+      await rateLimiter.useRateLimiter(socket.id);
       next();
-    } catch (rejRes) {
-      socket.emit(
-        socket_names.rate_limit,
-        "Too many notifications. Try again later"
-      );
+    } catch (rate_limit_message) {
+      socket.emit(socket_names.rate_limit, rate_limit_message);
     }
   });
 
@@ -33,7 +31,7 @@ const createSocketServer = (app) => {
     socket.on(socket_names.register, (userId) => {
       userSocketMap.set(userId, socket);
     });
-    socket.on("disconnect", () => {
+    socket.on(socket_names.disconnect, () => {
       for (let [userId, socketId] of userSocketMap.entries()) {
         if (socketId === socket.id) {
           userSocketMap.delete(userId);
@@ -46,13 +44,13 @@ const createSocketServer = (app) => {
       const { userId, message } = data;
 
       try {
-        await rateLimiter.consume(userId);
+        await rateLimiter.useRateLimiter(userId);
         const userSocketId = userSocketMap.get(userId);
         if (userSocketId) {
           userSocketId.emit(socket_names.added_user_to_group, { message });
         }
-      } catch (rejRes) {
-        socket.emit("Too many notifications. Please try again later.");
+      } catch (rate_limit_message) {
+        socket.emit(socket_names.rate_limit, rate_limit_message);
       }
     });
 
@@ -63,10 +61,10 @@ const createSocketServer = (app) => {
         const userSocketId = userSocketMap.get(userId);
         if (userSocketId) {
           try {
-            rateLimiter.consume(userId);
+            rateLimiter.useRateLimiter(userId);
             userSocketId.emit(socket_names.group_notifications, { message });
-          } catch (rejRes) {
-            socket.emit("Too many notifications. Please try again later.");
+          } catch (rate_limit_message) {
+            socket.emit(socket_names.rate_limit, rate_limit_message);
           }
         }
       });

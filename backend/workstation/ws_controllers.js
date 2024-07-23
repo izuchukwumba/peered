@@ -4,6 +4,7 @@ require("dotenv").config();
 const { userSocketMap, rateLimiter } = require("../notification/socket");
 const {
   notif_categories,
+  socket_names,
 } = require("../notification/notif_categories_backend");
 
 const findFile = async (fileId) => {
@@ -75,7 +76,7 @@ exports.createNewFile = async (req, res) => {
   }
 
   try {
-    await checkGroup(groupId, userId);
+    const group = await checkGroup(groupId, userId);
     const newFile = await prisma.file.create({
       data: {
         fileName: newFileName,
@@ -99,13 +100,22 @@ exports.createNewFile = async (req, res) => {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
         try {
-          await rateLimiter.consume(allUserIds[user_id]);
-
-          userSocketId.emit("notify_group", {
-            message: `User ${userId} has created a file: ${newFile.fileName}`,
-          });
-        } catch (rejRes) {
-          socket.emit("Too many notifications. Please try again later.");
+          const rate_limit_response = await rateLimiter.useRateLimiter(
+            allUserIds[user_id]
+          );
+          if (rate_limit_response?.error) {
+            const selfSocketId = userSocketMap.get(userId);
+            selfSocketId.emit(
+              socket_names.rate_limit,
+              rate_limit_response.message
+            );
+          } else {
+            userSocketId.emit(socket_names.group_notifications, {
+              message: `User ${userId} has created a file: ${newFile.fileName}`,
+            });
+          }
+        } catch (rate_limit_response) {
+          socket.emit(rate_limit_response);
         }
       }
 
@@ -114,12 +124,12 @@ exports.createNewFile = async (req, res) => {
           message: `${notif_sender.fullName} has created a file: ${newFile.fileName}`,
           category: notif_categories.file_created,
           fileId: newFile.id,
+          isOffline: !userSocketId ? true : false,
           groupId: group.id,
-          category: "file_created",
-          isImportant: true,
-        });
-      }
+        },
+      });
     }
+
     return res.status(201).json({
       message: "File created successfully",
       file: newFile,
@@ -205,13 +215,22 @@ exports.updateFileDetails = async (req, res) => {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
         try {
-          await rateLimiter.consume(allUserIds[user_id]);
-
-          userSocketId.emit("notify_group", {
-            message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
-          });
-        } catch (rejRes) {
-          socket.emit("Too many notifications. Please try again later.");
+          const rate_limit_response = await rateLimiter.useRateLimiter(
+            allUserIds[user_id]
+          );
+          if (rate_limit_response?.error) {
+            const selfSocketId = userSocketMap.get(userId);
+            selfSocketId.emit(
+              socket_names.rate_limit,
+              rate_limit_response.message
+            );
+          } else {
+            userSocketId.emit(socket_names.group_notifications, {
+              message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
+            });
+          }
+        } catch (rate_limit_response) {
+          socket.emit(rate_limit_response);
         }
       }
 
@@ -220,10 +239,10 @@ exports.updateFileDetails = async (req, res) => {
           message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
           category: notif_categories.file_updated,
           fileId: file.id,
+          isOffline: !userSocketId ? true : false,
           groupId: file.codeGroup.id,
-          isImportant: true,
-        });
-      }
+        },
+      });
     }
     return res.status(201).json(updatedFile);
   } catch (error) {
@@ -266,10 +285,18 @@ exports.deleteFile = async (req, res) => {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
       if (userSocketId) {
         try {
-          await rateLimiter.consume(allUserIds[user_id]);
-          userSocketId.emit("notify_group", {
-            message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
-          });
+          await rateLimiter.useRateLimiter(allUserIds[user_id]);
+          if (rate_limit_response?.error) {
+            const selfSocketId = userSocketMap.get(userId);
+            selfSocketId.emit(
+              socket_names.rate_limit,
+              rate_limit_response.message
+            );
+          } else {
+            userSocketId.emit(socket_names.group_notifications, {
+              message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
+            });
+          }
         } catch (rejRes) {
           socket.emit("Too many notifications. Please try again later.");
         }
@@ -279,11 +306,10 @@ exports.deleteFile = async (req, res) => {
           message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
           category: notif_categories.file_deleted,
           fileId: file.id,
+          isOffline: !userSocketId ? true : false,
           groupId: group.id,
-          category: "file_deleted",
-          isImportant: true,
-        });
-      }
+        },
+      });
     }
     return res.status(200).json({
       message: `File named ${file.fileName} has been deleted`,
