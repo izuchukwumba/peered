@@ -13,5 +13,15 @@ router.get(
   authMiddleware,
   notif_controllers.getNotifications
 );
+router.put(
+  "/:notifId/update-read-notifications",
+  authMiddleware,
+  notif_controllers.updateReadNotifications
+);
+router.put(
+  "/update-all-offline-notifications",
+  authMiddleware,
+  notif_controllers.updateAllOfflineNotifications
+);
 
 module.exports = router;

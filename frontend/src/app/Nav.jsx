@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Nav.css";
 import axios from "axios";
 import { notif_categories } from "../notification/notif_categories_frontend";
@@ -45,7 +47,7 @@ function Nav() {
   const navigate = useNavigate();
 
   const openWelcomeBackModal = () => {
-    onFirstModalOpen();
+    onWelcomeBackModalOpen();
   };
 
   const updateAllOfflineNotifs = async (req, res) => {
@@ -64,7 +66,7 @@ function Nav() {
       setError("Error updating notification");
     } finally {
       getNotifications();
-      onSecondModalClose();
+      onNotifModalClose();
     }
   };
 
@@ -81,6 +83,20 @@ function Nav() {
     getNotifications();
   };
 
+  const handleNotificationClick = (notif) => {
+    if (
+      notif.category === notif_categories.added_to_group ||
+      notif.category === notif_categories.file_deleted
+    ) {
+      goToCodeGroup(notif.id, notif.groupId);
+    } else if (
+      notif.category === notif_categories.file_created ||
+      notif.category === notif_categories.file_updated
+    ) {
+      goToFile(notif.id, notif.groupId, notif.fileId);
+    }
+  };
+
   useEffect(() => {
     if (offlineNotifications.length > 0) {
       openWelcomeBackModal();
@@ -88,21 +104,27 @@ function Nav() {
   }, [notifications]);
 
   const {
-    isOpen: isFirstModalOpen,
-    onOpen: onFirstModalOpen,
-    onClose: onFirstModalClose,
+    isOpen: isWelcomeBackModalOpen,
+    onOpen: onWelcomeBackModalOpen,
+    onClose: onWelcomeBackModalClose,
   } = useDisclosure();
   const {
-    isOpen: isSecondModalOpen,
-    onOpen: onSecondModalOpen,
-    onClose: onSecondModalClose,
+    isOpen: isNotifModalOpen,
+    onOpen: onNotifModalOpen,
+    onClose: onNotifModalClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isOfflineModalOpen,
+    onOpen: onOfflineModalOpen,
+    onClose: onOfflineModalClose,
   } = useDisclosure();
 
   return (
     <div id="Nav">
-      <i className="fa-solid fa-bell" onClick={onSecondModalOpen}></i>
+      <i className="fa-solid fa-bell" onClick={onNotifModalOpen}></i>
 
-      <Modal isOpen={isFirstModalOpen} onClose={onFirstModalClose}>
+      <Modal isOpen={isWelcomeBackModalOpen} onClose={onWelcomeBackModalClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader> Welcome back</ModalHeader>
@@ -116,20 +138,20 @@ function Nav() {
               colorScheme="blue"
               mr={3}
               onClick={() => {
-                onFirstModalClose();
-                onSecondModalOpen();
+                onWelcomeBackModalClose();
+                onOfflineModalOpen();
               }}
             >
               View All Now
             </Button>
-            <Button onClick={onFirstModalClose} variant="outline">
+            <Button onClick={onWelcomeBackModalClose} variant="outline">
               Close
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={isSecondModalOpen} onClose={onSecondModalClose}>
+      <Modal isOpen={isNotifModalOpen} onClose={onNotifModalClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Notifications</ModalHeader>
@@ -142,38 +164,41 @@ function Nav() {
                     return (
                       <div
                         key={index}
-                        onClick={
-                          notif.category === notif_categories.added_to_group ||
-                          notif.category === notif_categories.file_deleted
-                            ? () => goToCodeGroup(notif.id, notif.groupId)
-                            : notif.category ===
-                                notif_categories.file_created ||
-                              notif.category === notif_categories.file_updated
-                            ? () =>
-                                goToFile(notif.id, notif.groupId, notif.fileId)
-                            : ""
-                        }
-                        style={{
-                          fontWeight: !notif.isRead ? "bold" : "normal",
-                          color: notif.isOffline ? "gold" : "white",
-                        }}
+                        onClick={() => handleNotificationClick(notif)}
                       >
                         {notif.message}
                       </div>
                     );
                   })}
               </div>
-              {offlineNotifications.length > 0 && (
-                <div style={{ fontSize: "0.8rem", paddingTop: "30px" }}>
-                  Offline notifications shown in gold
-                </div>
-              )}
             </div>
           </ModalBody>
 
           <ModalFooter>
             <Button mr={4}>Clear All Notifications</Button>
             <Button colorScheme="blue" mr={3} onClick={updateAllOfflineNotifs}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={isOfflineModalOpen} onClose={onOfflineModalClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Here's What Happened While You Were Away</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {offlineNotifications.map((notif) => {
+              return (
+                <div onClick={() => handleNotificationClick(notif)}>
+                  {notif.messsage}
+                </div>
+              );
+            })}
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={onOfflineModalClose}>
               Close
             </Button>
           </ModalFooter>

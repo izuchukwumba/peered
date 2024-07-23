@@ -1,46 +1,41 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "./NotificationContext";
 import { Button } from "@chakra-ui/react";
 import "./Notifications.css";
 
 function Notification() {
-  const { notifications, setNotifications } = useNotifications();
-  const [parsedNotifs, setParsedNotifs] = useState([]);
+  const { notifications, getNotifications } = useNotifications();
 
-  useEffect(() => {
-    setParsedNotifs([]);
-    for (const notif in notifications) {
-      setParsedNotifs((prev) => [
-        ...prev,
-        JSON.parse(notifications[notif].data),
-      ]);
-    }
-  }, [notifications.length]);
-
-  const navigate = useNavigate();
-  const goToFile = (groupId, fileId) =>
-    navigate(`/group/${groupId}/files/${fileId}/workstation`);
-  const goToCodeGroup = (groupId) => navigate(`/group/${groupId}`);
+  const goToFile = async (notifId, groupId, fileId) => {
+    useNavigate()(`/group/${groupId}/files/${fileId}/workstation`);
+    updateReadNotifs(notifId);
+    getNotifications();
+  };
+  const goToCodeGroup = (notifId, groupId) => {
+    useNavigate()(`/group/${groupId}`);
+    updateReadNotifs(notifId);
+    getNotifications();
+  };
 
   return (
     <div id="Notifications">
       <h1>Notifications</h1>
       <div id="notifs">
-        {parsedNotifs.length > 0 &&
-          parsedNotifs.map((notif, index) => {
+        {notifications.length > 0 &&
+          notifications.map((notif, index) => {
             return (
               <Button
                 key={index}
                 onClick={
-                  notif.category === "added_to_code_group" ||
+                  notif.category === "added_to_group" ||
                   notif.category === "file_deleted"
-                    ? () => goToCodeGroup(notif.groupId)
+                    ? () => goToCodeGroup(notif.id, notif.groupId)
                     : notif.category === "file_created" ||
                       notif.category === "file_updated"
-                    ? () => goToFile(notif.groupId, notif.fileId)
+                    ? () => goToFile(notif.id, notif.groupId, notif.fileId)
                     : ""
                 }
+                style={{ fontWeight: !notif.isRead ? "bold" : "normal" }}
               >
                 {notif.message}
               </Button>

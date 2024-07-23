@@ -273,7 +273,7 @@ exports.updateGroupDetails = async (req, res) => {
                 message: `You have been added to the code group: ${group.groupName}`,
                 category: notif_categories.added_to_group,
                 isImportant: true,
-                isOffline: !userSocketId && true,
+                isOffline: !userSocketId ? true : false,
                 groupId: group.id,
                 sender: {
                   connect: { id: userId },
