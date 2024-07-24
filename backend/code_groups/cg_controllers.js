@@ -16,7 +16,6 @@ exports.getGroupsCreatedByUser = async (req, res) => {
         members: {
           include: {
             user: true,
-            addedBy: true,
           },
         },
         creator: true,
@@ -32,25 +31,25 @@ exports.getGroupsCreatedByUser = async (req, res) => {
 };
 
 //Get all groups User was added to
-exports.getGroupMemberships = async (req, res) => {
+exports.getGroupsAddedTo = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const groupMemberships = await prisma.groupMember.findMany({
+    const groupsAddedTo = await prisma.groupMember.findMany({
       where: { userId: userId },
       include: {
         group: {
           include: {
             creator: true,
             members: {
-              include: { user: true, addedBy: true },
+              include: { user: true },
             },
             files: true,
           },
         },
       },
     });
-    const groups = groupMemberships.map((group) => group?.group);
+    const groups = groupsAddedTo.map((group) => group?.group);
     res.status(200).json(groups);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -76,7 +75,7 @@ exports.createGroup = async (req, res) => {
           create: members
             ? members.map((memberUsername) => ({
                 user: { connect: { username: memberUsername } },
-                addedBy: { connect: { id: creatorId } },
+                addedById: creatorId,
               }))
             : [],
         },
@@ -85,7 +84,6 @@ exports.createGroup = async (req, res) => {
         members: {
           include: {
             user: true,
-            addedBy: true,
           },
         },
         creator: true,
@@ -134,7 +132,6 @@ exports.getGroupDetails = async (req, res) => {
         members: {
           include: {
             user: true,
-            addedBy: true,
           },
         },
         files: true,
@@ -181,7 +178,14 @@ exports.getGroupImageUrl = async (req, res) => {
 //Update Group Details: Group Name, Image and Add More Members
 exports.updateGroupDetails = async (req, res) => {
   const { groupId } = req.params;
-  const { newGroupName, newGroupImageUrl, newMembers } = req.body;
+  const {
+    newGroupName,
+    newGroupImageUrl,
+    newMembers,
+    preferredSkills,
+    preferredAvailability,
+    category,
+  } = req.body;
   const userId = req.user.id;
   try {
     //find group
@@ -212,6 +216,10 @@ exports.updateGroupDetails = async (req, res) => {
     if (newGroupImageUrl) {
       updatedGroupData.imgUrl = newGroupImageUrl;
     }
+    if (preferredAvailability) {
+      updatedGroupData.preferred_availability = preferredAvailability;
+    }
+
     const updatedGroup = await prisma.codeGroup.update({
       where: {
         id: parseInt(groupId),
@@ -222,6 +230,36 @@ exports.updateGroupDetails = async (req, res) => {
         creator: true,
       },
     });
+
+    if (preferredSkills && preferredSkills.length > 0) {
+      await prisma.skill.deleteMany({
+        where: {
+          codeGroupId: parseInt(groupId),
+        },
+      });
+      const skills = preferredSkills.map((skill) => ({
+        skill: skill,
+        codeGroupId: parseInt(groupId),
+      }));
+      await prisma.skill.createMany({
+        data: skills,
+      });
+    }
+
+    if (category && category.length > 0) {
+      await prisma.interest.deleteMany({
+        where: {
+          codeGroupId: parseInt(groupId),
+        },
+      });
+      await prisma.interest.create({
+        data: {
+          Interest: category[0],
+          codeGroupId: parseInt(groupId),
+        },
+      });
+    }
+
     //find user and create group membership
     if (newMembers && newMembers.length > 0) {
       for (const memberUsername of newMembers) {
@@ -244,11 +282,7 @@ exports.updateGroupDetails = async (req, res) => {
                     id: potentialMember.id,
                   },
                 },
-                addedBy: {
-                  connect: {
-                    id: userId,
-                  },
-                },
+                addedById: userId,
               },
             });
 
@@ -259,11 +293,6 @@ exports.updateGroupDetails = async (req, res) => {
 
                 userSocketId.emit("added_user_to_group", {
                   message: `You have been added to the code group: ${group.groupName}`,
-                  userId: potentialMember.id,
-                  senderId: userId,
-                  category: "added_to_code_group",
-                  groupId: group.id,
-                  isImportant: true,
                 });
               } catch (rejRes) {
                 socket.emit("Too many notifications. Please try again later.");
@@ -273,15 +302,10 @@ exports.updateGroupDetails = async (req, res) => {
               data: {
                 message: `You have been added to the code group: ${group.groupName}`,
                 category: "added_to_group",
-                isImportant: true,
                 isOffline: !userSocketId && true,
                 groupId: group.id,
-                sender: {
-                  connect: { id: userId },
-                },
-                receiver: {
-                  connect: { id: potentialMember.id },
-                },
+                senderId: userId,
+                receiverId: potentialMember.id,
               },
             });
           } catch (error) {
@@ -300,7 +324,6 @@ exports.updateGroupDetails = async (req, res) => {
         members: {
           include: {
             user: true,
-            addedBy: true,
           },
         },
         creator: true,

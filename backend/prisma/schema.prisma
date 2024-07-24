@@ -8,29 +8,35 @@ datasource db {
 }
 
 model User {
-  id               Int           @id @default(autoincrement())
-  username         String        @unique
-  email            String?       @unique
-  password         String?
-  fullName         String
-  imageUrl         String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @default(now()) @updatedAt
-  codeGroups       CodeGroup[]   @relation("UserCodeGroups")
-  groupMemberships GroupMember[] @relation("UserGroupMemberships")
-  addedGroups      GroupMember[] @relation("AddedByUser")
-  files            File[]        @relation("UserFiles")
+  id              Int           @id @default(autoincrement())
+  username        String        @unique
+  email           String?       @unique
+  password        String?
+  fullName        String
+  imageUrl        String?
+  availability    String?
+  userBio         String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @default(now()) @updatedAt
+  skills          Skill[]
+  interests       Interest[]
+  groups_created  CodeGroup[]   @relation("GroupsCreated")
+  groups_added_to GroupMember[] @relation("GroupsAddedTo")
+  files_created   File[]        @relation("UserFiles")
 }
 
 model CodeGroup {
-  id        Int           @id @default(autoincrement())
-  groupName String
-  imgUrl    String?
-  creatorId Int
-  createdAt DateTime      @default(now())
-  creator   User          @relation("UserCodeGroups", fields: [creatorId], references: [id])
-  members   GroupMember[] @relation("GroupMembers")
-  files     File[]        @relation("GroupFiles")
+  id                     Int           @id @default(autoincrement())
+  groupName              String
+  imgUrl                 String?
+  category               Interest[]
+  preferred_availability String?
+  preferred_skills       Skill[]
+  creatorId              Int
+  createdAt              DateTime      @default(now())
+  creator                User          @relation("GroupsCreated", fields: [creatorId], references: [id])
+  members                GroupMember[] @relation("GroupMembers")
+  files                  File[]        @relation("GroupFiles")
 }
 
 model GroupMember {
@@ -40,8 +46,7 @@ model GroupMember {
   addedById Int
   addedAt   DateTime  @default(now())
   group     CodeGroup @relation("GroupMembers", fields: [groupId], references: [id])
-  user      User      @relation("UserGroupMemberships", fields: [userId], references: [id])
-  addedBy   User      @relation("AddedByUser", fields: [addedById], references: [id])
+  user      User      @relation("GroupsAddedTo", fields: [userId], references: [id])
 
   @@unique([groupId, userId])
 }
@@ -49,11 +54,42 @@ model GroupMember {
 model File {
   id            Int       @id @default(autoincrement())
   fileName      String
-  fileContent   String
+  fileContent   String?
   creatorId     Int
   groupId       Int
   createdAt     DateTime  @default(now())
   lastUpdatedAt DateTime  @updatedAt
-  user          User      @relation("UserFiles", fields: [creatorId], references: [id])
+  creator       User      @relation("UserFiles", fields: [creatorId], references: [id])
   codeGroup     CodeGroup @relation("GroupFiles", fields: [groupId], references: [id])
+}
+
+model Skill {
+  id          Int        @id @default(autoincrement())
+  skill       String
+  user        User?      @relation(fields: [userId], references: [id])
+  userId      Int?
+  CodeGroup   CodeGroup? @relation(fields: [codeGroupId], references: [id])
+  codeGroupId Int?
+}
+
+model Interest {
+  id          Int        @id @default(autoincrement())
+  Interest    String
+  User        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int?
+  CodeGroup   CodeGroup? @relation(fields: [codeGroupId], references: [id])
+  codeGroupId Int?
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  message    String
+  category   String
+  isRead     Boolean  @default(false)
+  isOffline  Boolean  @default(false)
+  groupId    Int?
+  fileId     Int?
+  senderId   Int?
+  receiverId Int
+  createdAt  DateTime @default(now())
 }

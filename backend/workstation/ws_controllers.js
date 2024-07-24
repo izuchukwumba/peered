@@ -9,7 +9,7 @@ const findFile = async (fileId) => {
       id: parseInt(fileId),
     },
     include: {
-      user: true,
+      creator: true,
       codeGroup: {
         include: {
           members: true,
@@ -64,7 +64,7 @@ exports.createNewFile = async (req, res) => {
     const newFile = await prisma.file.create({
       data: {
         fileName: newFileName,
-        user: {
+        creator: {
           connect: {
             id: userId,
           },
@@ -103,14 +103,9 @@ exports.createNewFile = async (req, res) => {
           category: "file_created",
           fileId: newFile.id,
           groupId: group.id,
-          isImportant: true,
           isOffline: !userSocketId && true,
-          sender: {
-            connect: { id: userId },
-          },
-          receiver: {
-            connect: { id: allUserIds[user_id] },
-          },
+          senderId: userId,
+          receiverId: allUserIds[user_id],
         },
       });
     }
@@ -214,14 +209,9 @@ exports.updateFileDetails = async (req, res) => {
           category: "file_updated",
           fileId: file.id,
           groupId: file.codeGroup.id,
-          isImportant: true,
           isOffline: !userSocketId && true,
-          sender: {
-            connect: { id: userId },
-          },
-          receiver: {
-            connect: { id: allUserIds[user_id] },
-          },
+          senderId: userId,
+          receiverId: allUserIds[user_id],
         },
       });
     }
@@ -291,14 +281,9 @@ exports.deleteFile = async (req, res) => {
           category: "file_deleted",
           fileId: file.id,
           groupId: group.id,
-          isImportant: true,
           isOffline: !userSocketId && true,
-          sender: {
-            connect: { id: userId },
-          },
-          receiver: {
-            connect: { id: allUserIds[user_id] },
-          },
+          senderId: userId,
+          receiverId: allUserIds[user_id],
         },
       });
     }
@@ -331,4 +316,3 @@ exports.runCode = async (req, res) => {
     res.status(500).json({ error: "Error running file. Try again" });
   }
 };
-console;
