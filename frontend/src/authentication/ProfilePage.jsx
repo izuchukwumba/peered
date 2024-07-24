@@ -31,7 +31,7 @@ function ProfilePage() {
   const [isUser, setIsUser] = useState(false);
   const [newFullName, setNewFullName] = useState("");
   const [newImageUrl, setNewImageUrl] = useState("");
-  const [categories, setCategories] = useState([]);
+  const [interests, setInterests] = useState([]);
   const [skills, setSkills] = useState([]);
   const [availability, setAvailability] = useState("");
   const [error, setError] = useState("");
@@ -72,11 +72,11 @@ function ProfilePage() {
 
   useEffect(() => {
     fetchUserInfo();
-    if (userInfo !== null && loggedInUser.id == userInfo.id) {
+    if (userInfo !== null && loggedInUser?.id == userInfo.id) {
       setIsUser(true);
       setNewFullName(userInfo.fullName);
       setNewImageUrl(userInfo.imageUrl);
-      setCategories(userInfo.categories.map((category) => category.category));
+      setInterests(userInfo.interests?.map((interest) => interest.Interest));
       setSkills(userInfo.skills?.map((skill) => skill.skill));
       setAvailability(userInfo.availability);
     }
@@ -93,10 +93,12 @@ function ProfilePage() {
   function handleCheckbox(event, setValue) {
     const value = event.target.value;
     setValue((prev) => {
-      if (prev.includes(value)) {
+      if (prev?.includes(value)) {
         return prev.filter((val) => val !== value);
-      } else {
+      } else if (prev) {
         return [...prev, value];
+      } else {
+        return [value];
       }
     });
   }
@@ -105,7 +107,7 @@ function ProfilePage() {
     try {
       const response = await axios.put(
         `${BACKEND_URL}/auth/user/${username}/profile-build`,
-        { newFullName, newImageUrl, skills, availability, categories },
+        { newFullName, newImageUrl, availability, skills, interests },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -143,6 +145,10 @@ function ProfilePage() {
             <Text>{userInfo?.fullName}</Text>
           </Stack>
           <Stack mt={2} direction={"row"}>
+            <Text color={"white"}>Bio:</Text>
+            <Text>{userInfo?.userBio}</Text>
+          </Stack>
+          <Stack mt={2} direction={"row"}>
             <Text color={"white"}>Email:</Text>
             <Text>{userInfo?.email}</Text>
           </Stack>
@@ -174,9 +180,9 @@ function ProfilePage() {
           </Box>
           <Box mt={2}>
             <Text color={"white"}>Interested Categories:</Text>
-            {userInfo?.categories && (
+            {userInfo?.interests && (
               <HStack pt={2}>
-                {userInfo?.categories.map((category, index) => {
+                {userInfo?.interests.map((interest, index) => {
                   return (
                     <Box
                       key={index}
@@ -187,7 +193,7 @@ function ProfilePage() {
                       px={2}
                       py={1}
                     >
-                      {category.category}
+                      {interest.Interest}
                     </Box>
                   );
                 })}
@@ -196,9 +202,9 @@ function ProfilePage() {
           </Box>{" "}
           <Box mt={2}>
             <Text color={"white"}>CodeGroups Created:</Text>
-            {userInfo?.codeGroups && (
+            {userInfo?.groups_created && (
               <HStack pt={2}>
-                {userInfo?.codeGroups.map((group, index) => {
+                {userInfo?.groups_created.map((group, index) => {
                   return (
                     <Box
                       mr={2}
@@ -218,8 +224,8 @@ function ProfilePage() {
           </Box>
           <Stack mt={2} direction={"row"}>
             <Text color={"white"}>Number of Groups Added to:</Text>
-            {userInfo?.groupMemberships && (
-              <Text>{userInfo?.groupMemberships.length}</Text>
+            {userInfo?.groups_added_to && (
+              <Text>{userInfo?.groups_added_to.length}</Text>
             )}
           </Stack>
           <Stack mt={2} direction={"row"}>
@@ -260,24 +266,23 @@ function ProfilePage() {
               <Box mt={10}>
                 <Text color={"white"}>Preferred Categories</Text>
                 <Text color="rgba(255,255,255,0.5)">
-                  <i>What project categories would you like to work on?</i>
+                  <i>What project categories are you interested in?</i>
                 </Text>
                 <CheckboxGroup
                   colorScheme="green"
-                  //   onChange={() => handleChangeCategories(event)}
-                  onChange={() => handleCheckbox(event, setCategories)}
-                  value={categories}
+                  onChange={() => handleCheckbox(event, setInterests)}
+                  value={interests}
                 >
                   <HStack spacing={10}>
                     <Stack>
-                      <Checkbox value="Frontend Web Development">
-                        Frontend Web Development
+                      <Checkbox value="Frontend Development">
+                        Frontend Development
                       </Checkbox>
-                      <Checkbox value="Backend Web Development">
-                        Backend Web Development
+                      <Checkbox value="Backend Development">
+                        Backend Development
                       </Checkbox>
-                      <Checkbox value="Fullstack Web Development">
-                        Fullstack Web Development
+                      <Checkbox value="Fullstack Development">
+                        Fullstack Development
                       </Checkbox>
                       <Checkbox value="Mobile Development">
                         Mobile Development
@@ -337,7 +342,6 @@ function ProfilePage() {
                 </Text>
                 <CheckboxGroup
                   colorScheme="green"
-                  //   onChange={() => handleChangeSkills(event)}
                   onChange={() => handleCheckbox(event, setSkills)}
                   value={skills}
                 >

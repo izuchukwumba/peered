@@ -27,6 +27,10 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route
+                  path="/user/:username/profile-setup"
+                  element={<ProfileSetUp />}
+                />
+                <Route
                   path="/home"
                   element={
                     <ProtectedHomeRoute>
