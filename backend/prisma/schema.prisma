@@ -29,8 +29,8 @@ model CodeGroup {
   id                     Int           @id @default(autoincrement())
   groupName              String
   imgUrl                 String?
-  category               Interest[]
   preferred_availability String?
+  category               Interest[]
   preferred_skills       Skill[]
   creatorId              Int
   createdAt              DateTime      @default(now())

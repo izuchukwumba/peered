@@ -23,7 +23,6 @@ function WorkStation() {
         },
         withCredentials: true,
       });
-      setGroupData("");
       setGroupData(response.data);
     } catch (error) {
       setError("Error fetching group details");
@@ -59,7 +58,7 @@ function WorkStation() {
       <Box>
         <CodeIDE fileContent={fileData.fileContent} />
       </Box>
-      <div>This is group: {groupId}</div>
+      <div>This is group: {groupData.groupName}</div>
       {error && <div style={{ color: "red" }}>{error}</div>}
       <Footer />
     </Box>

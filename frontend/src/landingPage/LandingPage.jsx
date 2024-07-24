@@ -6,12 +6,11 @@ import "./LandingPage.css";
 function LandingPage() {
   const { isUserAuthenticated, setIsUserAuthenticated } =
     useAuthenticatedContext();
-
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
-    if (token) {
+    if (isUserAuthenticated || token) {
       setIsUserAuthenticated(true);
       navigate("/home");
     } else {
