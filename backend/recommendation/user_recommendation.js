@@ -6,6 +6,7 @@ const WEIGHTS = {
   interests: 0.4,
   skills: 0.3,
 };
+const NEAREST_NEIGHBOURS_TO_FIND = 10;
 
 const calculateAvailabilityScore = (
   userAvailability,
@@ -16,18 +17,17 @@ const calculateAvailabilityScore = (
 
 const calculateArrayScore = (userValue, groupValue) => {
   let matchedValue = [];
-  const flatUser = userValue.map((value) =>
-    Object.values(value).filter((val) => typeof val === "string")
-  );
-  const flatGroup = groupValue.map((value) =>
-    Object.values(value).filter((val) => typeof val === "string")
-  );
-
-  for (let i = 0; i < flatGroup.length; i++) {
-    matchedValue = matchedValue.concat(
-      flatUser.filter((value) => flatGroup[i][0].includes(value))
+  const flatArray = (arrayOfObjects) => {
+    return arrayOfObjects.flatMap((value) =>
+      Object.values(value).filter((val) => typeof val === "string")
     );
-  }
+  };
+  const flatUser = flatArray(userValue);
+  const flatGroup = flatArray(groupValue);
+
+  matchedValue = matchedValue.concat(
+    flatUser.filter((value) => flatGroup.includes(value))
+  );
   return matchedValue?.length / groupValue?.length;
 };
 
@@ -80,7 +80,7 @@ const recommendUsers = async (groupId) => {
     );
     const nearestNeighbours = recommendationTree.findNearestNeighbours(
       groupVector,
-      allUsers.length
+      NEAREST_NEIGHBOURS_TO_FIND
     );
 
     return nearestNeighbours.map((neighbour) => ({
