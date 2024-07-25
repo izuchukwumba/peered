@@ -241,10 +241,9 @@ exports.getUserInfo = async (req, res) => {
       include: {
         skills: true,
         interests: true,
-        codeGroups: true,
-        groupMemberships: true,
-        addedGroups: true,
-        files: true,
+        groups_created: true,
+        groups_added_to: true,
+        files_created: true,
       },
     });
     return res.status(200).json(user);

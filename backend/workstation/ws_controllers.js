@@ -13,7 +13,7 @@ const findFile = async (fileId) => {
       id: parseInt(fileId),
     },
     include: {
-      user: true,
+      creator: true,
       codeGroup: {
         include: {
           members: true,
@@ -26,16 +26,6 @@ const findUser = async (userId) => {
   return await prisma.user.findUnique({
     where: {
       id: userId,
-    },
-  });
-};
-const findGroup = async (groupId) => {
-  return await prisma.codeGroup.findUnique({
-    where: {
-      id: parseInt(groupId),
-    },
-    include: {
-      members: true,
     },
   });
 };
@@ -63,6 +53,28 @@ const checkGroup = async (groupId, userId) => {
   return group;
 };
 
+exports.saveNotification = async (
+  message,
+  category,
+  senderId,
+  receiverId,
+  userSocketId,
+  group,
+  file
+) => {
+  await prisma.notification.create({
+    data: {
+      message: message,
+      category: category,
+      fileId: file.id,
+      isOffline: !userSocketId ? true : false,
+      groupId: group.id,
+      senderId: senderId,
+      receiverId: receiverId,
+    },
+  });
+};
+
 //Create New File
 exports.createNewFile = async (req, res) => {
   const { groupId } = req.params;
@@ -80,7 +92,7 @@ exports.createNewFile = async (req, res) => {
     const newFile = await prisma.file.create({
       data: {
         fileName: newFileName,
-        user: {
+        creator: {
           connect: {
             id: userId,
           },
@@ -99,42 +111,39 @@ exports.createNewFile = async (req, res) => {
     const allUserIds = [...userIds, group.creatorId].filter(
       (id) => id !== userId
     );
+    const notificationMessage = `${notif_sender.fullName} has created a file: ${newFile.fileName}`;
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
+      const saveCreatedFileNotification = async () => {
+        await this.saveNotification(
+          notificationMessage,
+          notif_categories.file_created,
+          userId,
+          allUserIds[user_id],
+          userSocketId,
+          group,
+          newFile
+        );
+      };
       if (userSocketId) {
-        try {
-          const rate_limit_response = await rateLimiter.useRateLimiter(
-            allUserIds[user_id]
-          );
-          if (rate_limit_response?.error) {
-            const selfSocketId = userSocketMap.get(userId);
-            selfSocketId.emit(
-              socket_names.rate_limit,
-              rate_limit_response.message
-            );
-          } else {
-            userSocketId.emit(socket_names.group_notifications, {
-              message: `User ${userId} has created a file: ${newFile.fileName}`,
-            });
-          }
-        } catch (rate_limit_response) {
-          socket.emit(rate_limit_response);
+        const rateLimitResponse = await rateLimiter.useRateLimiter(
+          allUserIds[user_id],
+          notif_categories.file_created
+        );
+        if (rateLimitResponse?.isRateLimited) {
+          const selfSocketId = userSocketMap.get(userId);
+          selfSocketId.emit(socket_names.rate_limit, rateLimitResponse.message);
+        } else if (!rateLimitResponse?.isRateLimited) {
+          await saveCreatedFileNotification();
+          userSocketId.emit(socket_names.group_notifications, {
+            message: notificationMessage,
+            category: notif_categories.file_created,
+          });
         }
+      } else {
+        await saveCreatedFileNotification();
       }
-
-      await prisma.notification.create({
-        data: {
-          message: `${notif_sender.fullName} has created a file: ${newFile.fileName}`,
-          category: notif_categories.file_created,
-          fileId: newFile.id,
-          isOffline: !userSocketId ? true : false,
-          groupId: group.id,
-          senderId: userId,
-          receiverId: allUserIds[user_id]
-        },
-      });
     }
-
     return res.status(201).json({
       message: "File created successfully",
       file: newFile,
@@ -158,7 +167,7 @@ exports.getFileDetails = async (req, res) => {
         id: parseInt(fileId),
       },
       include: {
-        user: true,
+        creator: true,
         codeGroup: true,
       },
     });
@@ -208,40 +217,38 @@ exports.updateFileDetails = async (req, res) => {
     const allUserIds = [...userIds, file.codeGroup.creatorId].filter(
       (id) => id != userId
     );
+    const notificationMessage = `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`;
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
+      const saveUpdatedFileNotification = async () => {
+        await this.saveNotification(
+          notificationMessage,
+          notif_categories.file_updated,
+          userId,
+          allUserIds[user_id],
+          userSocketId,
+          file.codeGroup,
+          file
+        );
+      };
       if (userSocketId) {
-        try {
-          const rate_limit_response = await rateLimiter.useRateLimiter(
-            allUserIds[user_id]
-          );
-          if (rate_limit_response?.error) {
-            const selfSocketId = userSocketMap.get(userId);
-            selfSocketId.emit(
-              socket_names.rate_limit,
-              rate_limit_response.message
-            );
-          } else {
-            userSocketId.emit(socket_names.group_notifications, {
-              message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
-            });
-          }
-        } catch (rate_limit_response) {
-          socket.emit(rate_limit_response);
+        const rateLimitResponse = await rateLimiter.useRateLimiter(
+          allUserIds[user_id],
+          notif_categories.file_updated
+        );
+        if (rateLimitResponse?.isRateLimited) {
+          const selfSocketId = userSocketMap.get(userId);
+          selfSocketId.emit(socket_names.rate_limit, rateLimitResponse.message);
+        } else if (!rateLimitResponse?.isRateLimited) {
+          await saveUpdatedFileNotification();
+          userSocketId.emit(socket_names.group_notifications, {
+            message: notificationMessage,
+            category: notif_categories.file_updated,
+          });
         }
+      } else {
+        await saveUpdatedFileNotification();
       }
-
-      await prisma.notification.create({
-        data: {
-          message: `${notif_sender.fullName} has edited file: ${file.fileName} in group: ${file.codeGroup.groupName}`,
-          category: notif_categories.file_updated,
-          fileId: file.id,
-          isOffline: !userSocketId ? true : false,
-          groupId: file.codeGroup.id,
-          senderId: userId,
-          receiverId: allUserIds[user_id]
-        },
-      });
     }
 
     return res.status(201).json(updatedFile);
@@ -284,37 +291,38 @@ exports.deleteFile = async (req, res) => {
     const allUserIds = [...userIds, group.creatorId].filter(
       (id) => id != userId
     );
+    const notificationMessage = `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`;
     for (const user_id in allUserIds) {
       const userSocketId = userSocketMap.get(allUserIds[user_id]);
+      const saveDeletedFileNotification = async () => {
+        await this.saveNotification(
+          notificationMessage,
+          notif_categories.file_deleted,
+          userId,
+          allUserIds[user_id],
+          userSocketId,
+          group,
+          file
+        );
+      };
       if (userSocketId) {
-        try {
-          await rateLimiter.useRateLimiter(allUserIds[user_id]);
-          if (rate_limit_response?.error) {
-            const selfSocketId = userSocketMap.get(userId);
-            selfSocketId.emit(
-              socket_names.rate_limit,
-              rate_limit_response.message
-            );
-          } else {
-            userSocketId.emit(socket_names.group_notifications, {
-              message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
-            });
-          }
-        } catch (rejRes) {
-          socket.emit("Too many notifications. Please try again later.");
+        const rateLimitResponse = await rateLimiter.useRateLimiter(
+          allUserIds[user_id],
+          notif_categories.file_deleted
+        );
+        if (rateLimitResponse?.isRateLimited) {
+          const selfSocketId = userSocketMap.get(userId);
+          selfSocketId.emit(socket_names.rate_limit, rateLimitResponse.message);
+        } else if (!rateLimitResponse?.isRateLimited) {
+          await saveDeletedFileNotification();
+          userSocketId.emit(socket_names.group_notifications, {
+            message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
+            category: notif_categories,
+          });
         }
+      } else {
+        await saveDeletedFileNotification();
       }
-      await prisma.notification.create({
-        data: {
-          message: `${notif_sender.fullName} has deleted file: ${file.fileName} in group: ${group.groupName}`,
-          category: notif_categories.file_deleted,
-          fileId: file.id,
-          isOffline: !userSocketId ? true : false,
-          groupId: group.id,
-          enderId: userId,
-          receiverId: allUserIds[user_id]
-        },
-      });
     }
     return res.status(200).json({
       message: `File named ${file.fileName} has been deleted`,

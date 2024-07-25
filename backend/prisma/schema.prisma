@@ -15,6 +15,7 @@ model User {
   fullName        String
   imageUrl        String?
   availability    String?
+  userBio         String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @default(now()) @updatedAt
   skills          Skill[]
@@ -91,4 +92,12 @@ model Notification {
   senderId   Int?
   receiverId Int
   createdAt  DateTime @default(now())
+}
+
+model NotificationInteractions {
+  id             Int @id @default(autoincrement())
+  notificationId Int @unique
+  userId    Int
+  timestamp DateTime @default(now())
+  category  String
 }

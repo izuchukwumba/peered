@@ -1,4 +1,5 @@
 const prisma = require("../prisma/prisma_client");
+const { rateLimiter } = require("./socket");
 
 exports.saveNewNotification = async (req, res) => {
   const { data } = req.body;
@@ -79,6 +80,22 @@ exports.updateAllOfflineNotifications = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       error: "Error updating offline notifications",
+    });
+  }
+};
+exports.saveNewNotificationInteraction = async (req, res) => {
+  const userId = req.user.id;
+  const { category, notificationId } = req.body;
+  try {
+    const newInteraction = await rateLimiter.saveNotificationInteraction(
+      userId,
+      category,
+      notificationId
+    );
+    return res.status(200).json(newInteraction);
+  } catch (error) {
+    res.status(500).json({
+      error: "Error saving notification interaction",
     });
   }
 };

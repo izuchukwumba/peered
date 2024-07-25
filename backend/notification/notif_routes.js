@@ -23,5 +23,10 @@ router.put(
   authMiddleware,
   notif_controllers.updateAllOfflineNotifications
 );
+router.post(
+  "/new-notif-interaction",
+  authMiddleware,
+  notif_controllers.saveNewNotificationInteraction
+);
 
 module.exports = router;
