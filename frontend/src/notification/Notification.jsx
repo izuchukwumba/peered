@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "./NotificationContext";
 import { notif_categories } from "./notif_categories_frontend";
-import { updateReadNotifs } from "../app/Nav";
+import { updateReadNotifs, saveNotificationInteraction } from "../app/Nav";
 import "./Notifications.css";
 
 function Notification() {
@@ -17,6 +17,20 @@ function Notification() {
     updateReadNotifs(notifId);
     getNotifications();
   };
+  const handleNotificationClick = (notif) => {
+    saveNotificationInteraction(notif.category, notif.id);
+    if (
+      notif.category === notif_categories.added_to_group ||
+      notif.category === notif_categories.file_deleted
+    ) {
+      goToCodeGroup(notif.id, notif.groupId);
+    } else if (
+      notif.category === notif_categories.file_created ||
+      notif.category === notif_categories.file_updated
+    ) {
+      goToFile(notif.id, notif.groupId, notif.fileId);
+    }
+  };
 
   return (
     <div id="Notifications">
@@ -27,15 +41,7 @@ function Notification() {
             return (
               <div
                 key={index}
-                onClick={
-                  notif.category === notif_categories.added_to_group ||
-                  notif.category === notif_categories.file_deleted
-                    ? () => goToCodeGroup(notif.id, notif.groupId)
-                    : notif.category === notif_categories.file_created ||
-                      notif.category === notif_categories.file_updated
-                    ? () => goToFile(notif.id, notif.groupId, notif.fileId)
-                    : ""
-                }
+                onClick={() => handleNotificationClick(notif)}
                 style={{ fontWeight: !notif.isRead ? "bold" : "normal" }}
               >
                 {notif.message}
