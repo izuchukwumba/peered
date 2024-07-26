@@ -72,7 +72,7 @@ function ProfilePage() {
 
   useEffect(() => {
     fetchUserInfo();
-    if (userInfo !== null && loggedInUser.id == userInfo.id) {
+    if (userInfo !== null && loggedInUser?.id == userInfo.id) {
       setIsUser(true);
       setNewFullName(userInfo.fullName);
       setNewImageUrl(userInfo.imageUrl);
@@ -93,10 +93,12 @@ function ProfilePage() {
   function handleCheckbox(event, setValue) {
     const value = event.target.value;
     setValue((prev) => {
-      if (prev.includes(value)) {
+      if (prev?.includes(value)) {
         return prev.filter((val) => val !== value);
-      } else {
+      } else if (prev) {
         return [...prev, value];
+      } else {
+        return [value];
       }
     });
   }
@@ -143,6 +145,10 @@ function ProfilePage() {
             <Text>{userInfo?.fullName}</Text>
           </Stack>
           <Stack mt={2} direction={"row"}>
+            <Text color={"white"}>Bio:</Text>
+            <Text>{userInfo?.userBio}</Text>
+          </Stack>
+          <Stack mt={2} direction={"row"}>
             <Text color={"white"}>Email:</Text>
             <Text>{userInfo?.email}</Text>
           </Stack>
@@ -173,7 +179,7 @@ function ProfilePage() {
             )}
           </Box>
           <Box mt={2}>
-            <Text color={"white"}>Interests:</Text>
+            <Text color={"white"}>Interested Categories:</Text>
             {userInfo?.interests && (
               <HStack pt={2}>
                 {userInfo?.interests.map((interest, index) => {
@@ -187,7 +193,7 @@ function ProfilePage() {
                       px={2}
                       py={1}
                     >
-                      {interest.interest}
+                      {interest.Interest}
                     </Box>
                   );
                 })}
@@ -196,9 +202,9 @@ function ProfilePage() {
           </Box>{" "}
           <Box mt={2}>
             <Text color={"white"}>CodeGroups Created:</Text>
-            {userInfo?.codeGroups && (
+            {userInfo?.groups_created && (
               <HStack pt={2}>
-                {userInfo?.codeGroups.map((group, index) => {
+                {userInfo?.groups_created.map((group, index) => {
                   return (
                     <Box
                       mr={2}
@@ -218,8 +224,8 @@ function ProfilePage() {
           </Box>
           <Stack mt={2} direction={"row"}>
             <Text color={"white"}>Number of Groups Added to:</Text>
-            {userInfo?.groupMemberships && (
-              <Text>{userInfo?.groupMemberships.length}</Text>
+            {userInfo?.groups_added_to && (
+              <Text>{userInfo?.groups_added_to.length}</Text>
             )}
           </Stack>
           <Stack mt={2} direction={"row"}>
@@ -269,14 +275,14 @@ function ProfilePage() {
                 >
                   <HStack spacing={10}>
                     <Stack>
-                      <Checkbox value="Frontend Web Development">
-                        Frontend Web Development
+                      <Checkbox value="Frontend Development">
+                        Frontend Development
                       </Checkbox>
-                      <Checkbox value="Backend Web Development">
-                        Backend Web Development
+                      <Checkbox value="Backend Development">
+                        Backend Development
                       </Checkbox>
-                      <Checkbox value="Fullstack Web Development">
-                        Fullstack Web Development
+                      <Checkbox value="Fullstack Development">
+                        Fullstack Development
                       </Checkbox>
                       <Checkbox value="Mobile Development">
                         Mobile Development

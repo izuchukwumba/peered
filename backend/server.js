@@ -5,6 +5,7 @@ const authRoutes = require("./authentication/auth_routes");
 const cg_routes = require("./code_groups/cg_routes");
 const ws_routes = require("./workstation/ws_routes");
 const notif_routes = require("./notification/notif_routes");
+const ur_routes = require("./recommendation/recommendation_routes");
 const { createSocketServer } = require("./notification/socket");
 
 const app = express();
@@ -32,6 +33,7 @@ app.use("/auth", authRoutes);
 app.use("/api", cg_routes);
 app.use("/group", ws_routes);
 app.use("/notif", notif_routes);
+app.use("/recommendations", ur_routes);
 
 server.listen(PORT, () => {
   console.log("Server is running on port", PORT);
