@@ -16,7 +16,6 @@ const calculateAvailabilityScore = (
 };
 
 const calculateArrayScore = (userValue, groupValue) => {
-  let matchedValue = [];
   const flatArray = (arrayOfObjects) => {
     return arrayOfObjects.flatMap((value) =>
       Object.values(value).filter((val) => typeof val === "string")
@@ -24,10 +23,7 @@ const calculateArrayScore = (userValue, groupValue) => {
   };
   const flatUser = flatArray(userValue);
   const flatGroup = flatArray(groupValue);
-
-  matchedValue = matchedValue.concat(
-    flatUser.filter((value) => flatGroup.includes(value))
-  );
+  const matchedValue = flatUser.filter((value) => flatGroup.includes(value));
   return matchedValue?.length / groupValue?.length;
 };
 
