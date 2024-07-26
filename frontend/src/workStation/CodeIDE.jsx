@@ -13,27 +13,49 @@ function CodeIDE() {
   const [version, setVersion] = useState("18.15.0");
   const [showEditor, setShowEditor] = useState(false);
   const [error, setError] = useState("");
-  const [isLoading, setisLoading] = useState(false);
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
+  const [isDownloadLoading, setisDownloadLoading] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState("");
 
   const editorRef = useRef();
   const { groupId, fileId } = useParams();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("jwt");
-
+  const options = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  };
   const fetchFileDetails = async () => {
     try {
       const response = await axios.get(
         `${BACKEND_URL}/group/${groupId}/files/${fileId}/get-file-details`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
+        options
       );
       setFileData(response.data);
     } catch (error) {
       setError("Error fetching file details");
+    }
+  };
+
+  const prepareToDownloadFile = async () => {
+    try {
+      setisDownloadLoading(true);
+      const response = await axios.get(
+        `${BACKEND_URL}/group/${groupId}/files/${fileId}/download`,
+        options,
+        { responseType: "blob" }
+      );
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"],
+      });
+      const url = window.URL.createObjectURL(blob);
+      setDownloadUrl(url);
+    } catch (error) {
+      setError("Error downloading file. Refresh and try again");
+    } finally {
+      setisDownloadLoading(false);
     }
   };
 
@@ -55,7 +77,7 @@ function CodeIDE() {
   }
   const updateFileDetails = async () => {
     try {
-      setisLoading(true);
+      setIsSaveLoading(true);
       const response = await axios.put(
         `${BACKEND_URL}/group/${groupId}/files/${fileId}/update-file`,
         { newFileContent },
@@ -70,7 +92,7 @@ function CodeIDE() {
       setError("Error updating file details");
     } finally {
       fetchFileDetails();
-      setisLoading(false);
+      setIsSaveLoading(false);
     }
   };
 
@@ -89,10 +111,24 @@ function CodeIDE() {
               mt={5}
               ml={12}
               onClick={updateFileDetails}
-              isLoading={isLoading}
+              isLoading={isSaveLoading}
               loadingText="Saving"
             >
               Save File Content
+            </Button>
+            <Button
+              mt={5}
+              ml={12}
+              isLoading={isDownloadLoading}
+              loadingText="Downloading"
+            >
+              <a
+                onClick={prepareToDownloadFile}
+                download={fileData.fileName}
+                href={downloadUrl}
+              >
+                Download File
+              </a>
             </Button>
           </HStack>
           {showEditor && (

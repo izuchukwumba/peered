@@ -22,10 +22,8 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Text,
   useColorModeValue,
   useDisclosure,
-  useToast,
   Stack,
 } from "@chakra-ui/react";
 import logo from "../../assets/logo.png";

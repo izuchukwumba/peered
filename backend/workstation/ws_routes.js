@@ -28,5 +28,10 @@ router.post(
   authMiddleware,
   ws_controllers.runCode
 );
+router.get(
+  "/:groupId/files/:fileId/download",
+  authMiddleware,
+  ws_controllers.downloadFile
+);
 
 module.exports = router;

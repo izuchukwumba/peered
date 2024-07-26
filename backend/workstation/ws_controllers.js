@@ -332,6 +332,17 @@ exports.deleteFile = async (req, res) => {
   }
 };
 
+exports.downloadFile = async (req, res) => {
+  const { fileId } = req.params;
+  try {
+    const file = await findFile(fileId);
+    res.setHeader("Content-type", "application/octet-stream");
+    res.send(file.fileContent);
+  } catch (error) {
+    res.status(500).json({ error: "Error downloading file" });
+  }
+};
+
 //Run Code
 exports.runCode = async (req, res) => {
   const { language, version, codeBase } = req.body;
