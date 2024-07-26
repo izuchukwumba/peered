@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Notification" ALTER COLUMN "fileId" DROP NOT NULL,
+ALTER COLUMN "groupId" DROP NOT NULL;

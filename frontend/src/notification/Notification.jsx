@@ -1,18 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "./NotificationContext";
-import { Button } from "@chakra-ui/react";
+import { notif_categories } from "./notif_categories_frontend";
+import { updateReadNotifs } from "../app/Nav";
 import "./Notifications.css";
 
 function Notification() {
   const { notifications, getNotifications } = useNotifications();
-
+  const navigate = useNavigate();
   const goToFile = async (notifId, groupId, fileId) => {
-    useNavigate()(`/group/${groupId}/files/${fileId}/workstation`);
+    navigate(`/group/${groupId}/files/${fileId}/workstation`);
     updateReadNotifs(notifId);
     getNotifications();
   };
   const goToCodeGroup = (notifId, groupId) => {
-    useNavigate()(`/group/${groupId}`);
+    navigate(`/group/${groupId}`);
     updateReadNotifs(notifId);
     getNotifications();
   };
@@ -24,21 +25,21 @@ function Notification() {
         {notifications.length > 0 &&
           notifications.map((notif, index) => {
             return (
-              <Button
+              <div
                 key={index}
                 onClick={
-                  notif.category === "added_to_group" ||
-                  notif.category === "file_deleted"
+                  notif.category === notif_categories.added_to_group ||
+                  notif.category === notif_categories.file_deleted
                     ? () => goToCodeGroup(notif.id, notif.groupId)
-                    : notif.category === "file_created" ||
-                      notif.category === "file_updated"
+                    : notif.category === notif_categories.file_created ||
+                      notif.category === notif_categories.file_updated
                     ? () => goToFile(notif.id, notif.groupId, notif.fileId)
                     : ""
                 }
                 style={{ fontWeight: !notif.isRead ? "bold" : "normal" }}
               >
                 {notif.message}
-              </Button>
+              </div>
             );
           })}
       </div>

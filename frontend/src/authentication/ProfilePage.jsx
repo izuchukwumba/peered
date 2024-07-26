@@ -1,25 +1,25 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import {
-  Box,
-  Text,
-  Stack,
-  HStack,
-  Flex,
   AbsoluteCenter,
+  Box,
   Button,
-  useDisclosure,
+  Checkbox,
+  CheckboxGroup,
+  Flex,
+  HStack,
   Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalCloseButton,
-  CheckboxGroup,
-  Checkbox,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Radio,
   RadioGroup,
+  Stack,
+  Text,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import BackButton from "../app/BackButton";
@@ -76,7 +76,7 @@ function ProfilePage() {
       setIsUser(true);
       setNewFullName(userInfo.fullName);
       setNewImageUrl(userInfo.imageUrl);
-      setInterests(userInfo.interests?.map((interest) => interest.Interest));
+      setInterests(userInfo.interests.map((interest) => interest.interst));
       setSkills(userInfo.skills?.map((skill) => skill.skill));
       setAvailability(userInfo.availability);
     }
@@ -107,7 +107,7 @@ function ProfilePage() {
     try {
       const response = await axios.put(
         `${BACKEND_URL}/auth/user/${username}/profile-build`,
-        { newFullName, newImageUrl, availability, skills, interests },
+        { newFullName, newImageUrl, skills, availability, interests },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -264,7 +264,7 @@ function ProfilePage() {
               </Box>
 
               <Box mt={10}>
-                <Text color={"white"}>Preferred Categories</Text>
+                <Text color={"white"}>Interests</Text>
                 <Text color="rgba(255,255,255,0.5)">
                   <i>What project categories are you interested in?</i>
                 </Text>

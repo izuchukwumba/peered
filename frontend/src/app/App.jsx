@@ -11,7 +11,7 @@ import CodeGroup from "../workStation/CodeGroup";
 import WorkStation from "../workStation/WorkStation";
 import ProfileSetUp from "../authentication/ProfileSetUp";
 import ProfilePage from "../authentication/ProfilePage";
-import NotificationProvider from "./NotificationContext";
+import NotificationProvider from "../notification/NotificationContext";
 import { Box } from "@chakra-ui/react";
 
 function App() {

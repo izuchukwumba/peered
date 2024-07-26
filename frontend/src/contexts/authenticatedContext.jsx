@@ -42,3 +42,5 @@ export const AuthenticatedContextProvider = ({ children }) => {
     </authenticatedContext.Provider>
   );
 };
+
+export default AuthenticatedContextProvider;

@@ -91,9 +91,11 @@ function CodeGroup() {
   };
 
   function handleAddNewMemberToList() {
-    if (newMemberInput) {
+    if (newMemberInput && !newMembers.includes(newMemberInput)) {
       setNewMembers([...newMembers, newMemberInput]);
       setNewMemberInput("");
+    } else {
+      setError("Member is already added to list, or input is empty.");
     }
   }
 
@@ -109,7 +111,7 @@ function CodeGroup() {
         options
       );
     } catch (error) {
-      setError("Error Creating Group. Try again");
+      setError("Error Creating File. Try again");
     } finally {
       setNewFileName("");
       fetchGroupDetails();
@@ -163,11 +165,13 @@ function CodeGroup() {
                 ? allFiles.map((file, index) => {
                     return (
                       <li key={index}>
-                        <span onClick={() => handleOpenFile(file.id)}>
+                        <Button onClick={() => handleOpenFile(file.id)}>
                           {file.fileName} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </span>
-                        <span onClick={() => handleDeleteFile(file.id)}>
-                          delete file
+                        </Button>
+                        <span>
+                          <Button onClick={() => handleDeleteFile(file.id)}>
+                            Delete file
+                          </Button>
                         </span>
                       </li>
                     );
@@ -190,22 +194,25 @@ function CodeGroup() {
           <Box m={4}>
             {groupData.id ? (
               <ul>
-                <li
-                  onClick={() =>
-                    handleUserProfileClick(groupData.creator.username)
-                  }
-                >
-                  {groupData.creator.fullName}&nbsp;&nbsp;(creator)
+                <li>
+                  <Button
+                    onClick={() =>
+                      handleUserProfileClick(groupData.creator.username)
+                    }
+                  >
+                    {groupData.creator.fullName}&nbsp;&nbsp;(creator)
+                  </Button>
                 </li>
                 {allMembers.map((member, index) => {
                   return (
-                    <li
-                      key={index}
-                      onClick={() =>
-                        handleUserProfileClick(member.user.username)
-                      }
-                    >
-                      {member.user.fullName}
+                    <li key={index}>
+                      <Button
+                        onClick={() =>
+                          handleUserProfileClick(member.user.username)
+                        }
+                      >
+                        {member.user.fullName}
+                      </Button>
                     </li>
                   );
                 })}
@@ -252,7 +259,7 @@ function CodeGroup() {
                 placeholder="type username"
               />
               <Button variant="outline" onClick={handleAddNewMemberToList}>
-                add member
+                Add member
               </Button>
               {newMembers.length > 0 && (
                 <ul>
@@ -299,7 +306,7 @@ function CodeGroup() {
                 placeholder="type username"
               />
               <Button variant="outline" onClick={handleAddNewMemberToList}>
-                add to queue
+                Add to queue
               </Button>
               {newMembers.length > 0 && (
                 <ul>
