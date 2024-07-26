@@ -4,6 +4,8 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import { useAuthenticatedContext } from "../contexts/authenticatedContext";
 import { useNavigate } from "react-router-dom";
+import "./LoginPage.css";
+import logo from "../../assets/logo.png";
 
 function LoginPage() {
   const [username, setUsername] = useState("");
@@ -65,12 +67,14 @@ function LoginPage() {
   };
   return (
     <div id="LoginPage">
-      <h1>Welcome to Peered</h1>
+      <img src={logo} alt="peered-logo" />
+      <h1 id="login-h1">Welcome to Peered</h1>
       {!isUserAuthenticated && <div>Logged Out</div>}
-      <h2>Login</h2>
+      <h2 id="login-h2">Already have an account?</h2>
+      <h3 id="login-h3">Login!</h3>
       <form onSubmit={handleLogin}>
         <div>
-          <label>Username:</label>
+          <div>Username:</div>
           <input
             type="text"
             value={username}
@@ -79,7 +83,7 @@ function LoginPage() {
           />
         </div>
         <div>
-          <label>Password:</label>
+          <div>Password:</div>
           <input
             type="password"
             value={password}
@@ -88,18 +92,22 @@ function LoginPage() {
           />
         </div>
 
-        <Button type="submit" className="btn">
+        <div type="submit" className="btn login-btn">
           Login
-        </Button>
+        </div>
       </form>
-      OR
-      <Button className="btn" onClick={handleLoginWithGithub}>
+
+      <div className="btn github-btn" onClick={handleLoginWithGithub}>
         Login with Github
-      </Button>
-      <Box>
-        Don't have an account?
-        <Button onClick={() => navigate("/signup`")}>Sign Up Now</Button>
-      </Box>
+      </div>
+      <div>
+        <div id="signup-div">
+          Don't have an account?
+          <div className="btn signup-btn" onClick={() => navigate("/signup`")}>
+            Sign Up Now
+          </div>
+        </div>
+      </div>
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
