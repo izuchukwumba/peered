@@ -1,0 +1,72 @@
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltip-text {
+  visibility: hidden;
+  width: 120px;
+  background-color: rgb(149, 148, 148);
+  color: black;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 3px;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -60px;
+  font-size: 0.8rem;
+}
+
+.tooltip .tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+.file-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 50px;
+}
+.file-list-item {
+  display: flex;
+  cursor: pointer;
+}
+.tooltip {
+  display: flex;
+  flex-direction: row;
+}
+.file-icon {
+  font-size: 6rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+.file-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.file-item-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.file-name {
+  font-size: 1.1rem;
+  color: white;
+}
