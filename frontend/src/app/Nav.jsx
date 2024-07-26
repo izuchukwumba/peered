@@ -14,7 +14,6 @@ import {
   ModalHeader,
   ModalOverlay,
   useDisclosure,
-  useToast,
 } from "@chakra-ui/react";
 import { useNotifications } from "../notification/NotificationContext";
 
@@ -52,8 +51,7 @@ export const saveNotificationInteraction = async (category, notificationId) => {
 
 function Nav() {
   const [error, setError] = useState("");
-  const { notifications, getNotifications, rateLimiterMessage } =
-    useNotifications();
+  const { notifications, getNotifications } = useNotifications();
   let offlineNotifications = [];
   offlineNotifications = notifications.filter(
     (notif) => notif.isOffline === true
@@ -133,16 +131,6 @@ function Nav() {
     onClose: onOfflineModalClose,
   } = useDisclosure();
 
-  const toast = useToast();
-  if (rateLimiterMessage) {
-    toast({
-      title: "Notification Rate Limit Exceeded",
-      description: rateLimiterMessage,
-      status: "warning",
-      duration: 2000,
-      isClosable: true,
-    });
-  }
   return (
     <div id="Nav">
       <i className="fa-solid fa-bell" onClick={onNotifModalOpen}></i>

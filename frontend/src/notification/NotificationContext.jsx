@@ -18,7 +18,6 @@ export const useNotifications = () => {
 const NotificationProvider = ({ children }) => {
   const [userId, setUserId] = useState();
   const [notifications, setNotifications] = useState([]);
-  const [rateLimiterMessage, setRateLimiterMessage] = useState("");
   const [error, setError] = useState("");
 
   const getNotifications = async () => {
@@ -52,9 +51,6 @@ const NotificationProvider = ({ children }) => {
     }
     notifReload(socket_names.group_notifications);
     notifReload(socket_names.added_user_to_group);
-    socket.on(socket_names.rate_limit, (data) => {
-      setRateLimiterMessage(data);
-    });
   }, [socket, userId]);
   return (
     <NotificationContext.Provider
@@ -62,7 +58,6 @@ const NotificationProvider = ({ children }) => {
         notifications,
         setNotifications,
         getNotifications,
-        rateLimiterMessage,
       }}
     >
       {children}
