@@ -138,7 +138,11 @@ exports.getGroupDetails = async (req, res) => {
             user: true,
           },
         },
-        files: true,
+        files: {
+          include: {
+            creator: true,
+          },
+        },
       },
     });
     if (!group) {

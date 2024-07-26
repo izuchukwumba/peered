@@ -4,12 +4,13 @@ import CodeGroupsList from "./CodeGroupsList";
 import Files from "./Files";
 import Notifications from "../notification/Notification";
 import Footer from "../app/Footer";
+import { Box } from "@chakra-ui/react";
 
 function Home() {
   return (
     <div id="Home">
       <Nav />
-      <main id="home-body">
+      <Box id="home-body" pt={24}>
         <div id="home-body-left">
           <CodeGroupsList />
           <Files />
@@ -17,7 +18,7 @@ function Home() {
         <div id="home-body-right">
           <Notifications />
         </div>
-      </main>
+      </Box>
       <Footer />
     </div>
   );

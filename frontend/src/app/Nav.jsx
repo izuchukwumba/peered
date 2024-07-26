@@ -4,8 +4,18 @@ import "./Nav.css";
 import axios from "axios";
 import { notif_categories } from "../notification/notif_categories_frontend";
 import {
+  Avatar,
   Box,
   Button,
+  Flex,
+  HStack,
+  IconButton,
+  Image,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuItem,
+  MenuList,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -13,11 +23,18 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Text,
+  useColorModeValue,
   useDisclosure,
+  useToast,
+  Stack,
 } from "@chakra-ui/react";
+import logo from "../../assets/logo.png";
+import { HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
 import { useNotifications } from "../notification/NotificationContext";
 
 const token = localStorage.getItem("jwt");
+const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const options = {
   headers: {
@@ -124,16 +141,125 @@ function Nav() {
     onOpen: onNotifModalOpen,
     onClose: onNotifModalClose,
   } = useDisclosure();
-
   const {
     isOpen: isOfflineModalOpen,
     onOpen: onOfflineModalOpen,
     onClose: onOfflineModalClose,
   } = useDisclosure();
+  const {
+    isOpen: isAvatarOpen,
+    onOpen: onAvatarOpen,
+    onClose: onAvatarClose,
+  } = useDisclosure();
+  const Links = ["Dashboard", "Projects", "Team"];
 
+  const NavLink = (props) => {
+    const { children } = props;
+
+    return (
+      <Box
+        as="a"
+        px={6}
+        py={2}
+        color={"#97e8a9"}
+        bg={"gray.700"}
+        rounded={"md"}
+        border={"1px solid"}
+        borderColor={"gray"}
+        _hover={{
+          textDecoration: "none",
+          bg: "#97e8a9",
+          color: "black",
+        }}
+        href={"#"}
+      >
+        {children}
+      </Box>
+    );
+  };
+
+  function Simple() {
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    return (
+      <Box bg={useColorModeValue("gray.100", "gray.900")} pl={6} pr={8} py={2}>
+        <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
+          <IconButton
+            size={"md"}
+            icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
+            aria-label={"Open Menu"}
+            display={{ md: "none" }}
+            onClick={isOpen ? onClose : onOpen}
+          />
+          <HStack spacing={8} alignItems={"center"}>
+            <Box>
+              <Image boxSize="60px" src={logo} alt="logo" mr={6} />
+            </Box>
+            <HStack
+              as={"nav"}
+              spacing={4}
+              display={{ base: "none", md: "flex" }}
+            >
+              <NavLink>{"Home"}</NavLink>
+              <NavLink>{"Projects"}</NavLink>
+              <NavLink>{"CodeGroups"}</NavLink>
+              <NavLink>{"Workstation"}</NavLink>
+              <NavLink>{"Teammates"}</NavLink>
+            </HStack>
+          </HStack>
+          <Flex alignItems={"center"}>
+            <i
+              className="fa-solid fa-bell"
+              style={{ fontSize: "20px", color: "#97e8a9" }}
+              onClick={onNotifModalOpen}
+            ></i>
+            <Menu>
+              <MenuButton
+                as={Button}
+                rounded={"full"}
+                variant={"link"}
+                cursor={"pointer"}
+                minW={0}
+              >
+                <Avatar
+                  size={"md"}
+                  src={userInfo.imageUrl}
+                  ml={8}
+                  border={"0.5px solid #97e8a9"}
+                />
+              </MenuButton>
+              <MenuList>
+                <MenuItem>Profile</MenuItem> <MenuDivider />
+                <MenuItem>Settings</MenuItem>
+                <MenuDivider />
+                <MenuItem>Log out</MenuItem>
+              </MenuList>
+            </Menu>
+          </Flex>
+        </Flex>
+        {isOpen ? (
+          <Box pb={4} display={{ md: "none" }}>
+            <Stack as={"nav"} spacing={4}>
+              <NavLink>{"Home"}</NavLink>
+              <NavLink>{"Projects"}</NavLink>
+              <NavLink>{"CodeGroups"}</NavLink>
+              <NavLink>{"Workstation"}</NavLink>
+              <NavLink>{"Teammates"}</NavLink>
+            </Stack>
+          </Box>
+        ) : null}
+      </Box>
+    );
+  }
   return (
-    <div id="Nav">
-      <i className="fa-solid fa-bell" onClick={onNotifModalOpen}></i>
+    <Box
+      id="Nav"
+      position={"fixed"}
+      w={"100%"}
+      zIndex={2}
+      borderBottom={"0.5px solid #97e8a9"}
+      boxShadow={"#97e8a9 0px 0.3px 10px"}
+    >
+      <Simple />
 
       <Modal isOpen={isWelcomeBackModalOpen} onClose={onWelcomeBackModalClose}>
         <ModalOverlay />
@@ -215,7 +341,7 @@ function Nav() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </div>
+    </Box>
   );
 }
 
