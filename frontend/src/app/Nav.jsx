@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Nav.css";
 import axios from "axios";
 import { notif_categories } from "../notification/notif_categories_frontend";
 import {
