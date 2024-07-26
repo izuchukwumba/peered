@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Nav.css";
 import axios from "axios";
@@ -19,25 +19,38 @@ import { useNotifications } from "../notification/NotificationContext";
 
 const token = localStorage.getItem("jwt");
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const options = {
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+  withCredentials: true,
+};
 
 export const updateReadNotifs = async (notifId) => {
   try {
     const response = await axios.put(
       `${BACKEND_URL}/notif/${notifId}/update-read-notifications`,
       {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      }
+      options
     );
   } catch (error) {
-    setError("Error updating notification");
+    throw new Error({ error: "Error updating unread notifications" });
+  }
+};
+export const saveNotificationInteraction = async (category, notificationId) => {
+  try {
+    const response = await axios.post(
+      `${BACKEND_URL}/notif/new-notif-interaction`,
+      { category, notificationId },
+      options
+    );
+  } catch (error) {
+    throw new Error({ error: "Error saving notifications" });
   }
 };
 
 function Nav() {
+  const [error, setError] = useState("");
   const { notifications, getNotifications } = useNotifications();
   let offlineNotifications = [];
   offlineNotifications = notifications.filter(
@@ -50,7 +63,7 @@ function Nav() {
     onWelcomeBackModalOpen();
   };
 
-  const updateAllOfflineNotifs = async (req, res) => {
+  const updateAllOfflineNotifs = async () => {
     try {
       const response = await axios.put(
         `${BACKEND_URL}/notif/update-all-offline-notifications`,
@@ -66,24 +79,23 @@ function Nav() {
       setError("Error updating notification");
     } finally {
       getNotifications();
-      onNotifModalClose();
+      onOfflineModalClose();
     }
   };
 
   const goToFile = async (notifId, groupId, fileId) => {
     navigate(`/group/${groupId}/files/${fileId}/workstation`);
     updateReadNotifs(notifId);
-    updateAllOfflineNotifs();
     getNotifications();
   };
   const goToCodeGroup = (notifId, groupId) => {
     navigate(`/group/${groupId}`);
     updateReadNotifs(notifId);
-    updateAllOfflineNotifs();
     getNotifications();
   };
 
   const handleNotificationClick = (notif) => {
+    saveNotificationInteraction(notif.category, notif.id);
     if (
       notif.category === notif_categories.added_to_group ||
       notif.category === notif_categories.file_deleted
@@ -102,7 +114,6 @@ function Nav() {
       openWelcomeBackModal();
     }
   }, [notifications]);
-
   const {
     isOpen: isWelcomeBackModalOpen,
     onOpen: onWelcomeBackModalOpen,
@@ -189,16 +200,16 @@ function Nav() {
           <ModalHeader>Here's What Happened While You Were Away</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            {offlineNotifications.map((notif) => {
+            {offlineNotifications.map((notif, index) => {
               return (
-                <div onClick={() => handleNotificationClick(notif)}>
-                  {notif.messsage}
+                <div key={index} onClick={() => handleNotificationClick(notif)}>
+                  {notif.message}
                 </div>
               );
             })}
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onOfflineModalClose}>
+            <Button colorScheme="blue" mr={3} onClick={updateAllOfflineNotifs}>
               Close
             </Button>
           </ModalFooter>

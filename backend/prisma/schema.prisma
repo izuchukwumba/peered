@@ -93,3 +93,11 @@ model Notification {
   receiverId Int
   createdAt  DateTime @default(now())
 }
+
+model NotificationInteractions {
+  id             Int @id @default(autoincrement())
+  notificationId Int @unique
+  userId    Int
+  timestamp DateTime @default(now())
+  category  String
+}

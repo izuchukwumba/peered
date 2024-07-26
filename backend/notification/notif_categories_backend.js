@@ -7,6 +7,7 @@ const notif_categories = {
 
 const socket_names = {
   connection: "connection",
+  disconnect: "disconnect",
   register: "register",
   rate_limit: "rate-limit",
   group_notifications: "notify_group",

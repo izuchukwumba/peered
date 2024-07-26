@@ -5,6 +5,7 @@ const {
   notif_categories,
   socket_names,
 } = require("../notification/notif_categories_backend");
+const { saveNotification } = require("../workstation/ws_controllers");
 require("dotenv").config();
 
 //Get All Groups Created by User
@@ -276,6 +277,7 @@ exports.updateGroupDetails = async (req, res) => {
           try {
             await prisma.groupMember.create({
               data: {
+                addedById: userId,
                 group: {
                   connect: {
                     id: group.id,
@@ -291,27 +293,39 @@ exports.updateGroupDetails = async (req, res) => {
             });
 
             const userSocketId = userSocketMap.get(potentialMember.id);
+            const notificationMessage = `You have been added to the code group: ${group.groupName}`;
+            const saveAddedToGroupNotification = async () => {
+              await saveNotification(
+                notificationMessage,
+                notif_categories.added_to_group,
+                userId,
+                potentialMember.id,
+                userSocketId,
+                group,
+                { id: null }
+              );
+            };
             if (userSocketId) {
-              try {
-                await rateLimiter.consume(potentialMember.id);
-
+              const rateLimitResponse = await rateLimiter.useRateLimiter(
+                potentialMember.id,
+                notif_categories.added_to_group
+              );
+              if (rateLimitResponse?.isRateLimited) {
+                const selfSocketId = userSocketMap.get(userId);
+                selfSocketId.emit(
+                  socket_names.rate_limit,
+                  rateLimitResponse.message
+                );
+              } else if (!rateLimitResponse?.isRateLimited) {
+                await saveAddedToGroupNotification();
                 userSocketId.emit(socket_names.added_user_to_group, {
-                  message: `You have been added to the code group: ${group.groupName}`,
+                  message: notificationMessage,
+                  category: notif_categories.added_to_group,
                 });
-              } catch (rejRes) {
-                socket.emit("Too many notifications. Please try again later.");
               }
-            }
-            await prisma.notification.create({
-              data: {
-                message: `You have been added to the code group: ${group.groupName}`,
-                category: notif_categories.added_to_group,
-                isOffline: !userSocketId ? true : false,
-                groupId: group.id,
-                senderId: userId,
-                receiverId: potentialMember.id,
-              },
-            });
+            } else {
+              await saveAddedToGroupNotification();
+            }            
           } catch (error) {
             res
               .status(500)

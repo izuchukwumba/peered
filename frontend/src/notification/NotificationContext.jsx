@@ -54,7 +54,11 @@ const NotificationProvider = ({ children }) => {
   }, [socket, userId]);
   return (
     <NotificationContext.Provider
-      value={{ notifications, setNotifications, getNotifications }}
+      value={{
+        notifications,
+        setNotifications,
+        getNotifications,
+      }}
     >
       {children}
     </NotificationContext.Provider>
