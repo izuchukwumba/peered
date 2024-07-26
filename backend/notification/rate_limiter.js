@@ -7,17 +7,6 @@ class RateLimiter {
     this.userRequestMap = new Map();
   }
 
-  async saveNotificationInteraction(userId, category, notificationId) {
-    await prisma.notificationInteractions.create({
-      data: {
-        userId: userId,
-        timestamp: new Date(),
-        category: category,
-        notificationId: notificationId,
-      },
-    });
-  }
-
   async getNotificationInteractionsData(userId) {
     const interactions = await prisma.notificationInteractions.findMany({
       where: {
@@ -32,19 +21,15 @@ class RateLimiter {
 
   async getUserMostActiveTimeWIndows(userId) {
     const interactions = await this.getNotificationInteractionsData(userId);
-    const hourCounts = new Array(24).fill(0);
+    const hourCounts = {};
     interactions.forEach((item) => {
       const hour = new Date(item.timestamp).getHours();
-      hourCounts[hour]++;
+      hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     });
-
-    const activeHours = hourCounts.map((numberOfClicks, hourIndex) => ({
-      hourIndex,
-      numberOfClicks,
-    }));
-    return activeHours
-      .sort((a, b) => b.numberOfClicks - a.numberOfClicks)
-      .slice(0, 3); //Returns top user's top 3 active hours
+    const sortedHours = Object.entries(hourCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([hour]) => parseInt(hour));
+    return sortedHours.slice(0, 3);
   }
 
   async getUserPreferredNotificationCategory(userId) {
@@ -64,10 +49,7 @@ class RateLimiter {
     const currentTime = Date.now();
     const currentHour = new Date().getHours();
     const userMostActiveHours = await this.getUserMostActiveTimeWIndows(userId);
-    const userActiveHours = userMostActiveHours.filter(
-      (item) => item.hourIndex === currentHour
-    );
-    const isUserActiveTimeWindow = userActiveHours.length > 0;
+    const isUserActiveTimeWindow = userMostActiveHours.includes(currentHour);
     const preferredNotificationCategory =
       await this.getUserPreferredNotificationCategory();
 
@@ -97,22 +79,14 @@ class RateLimiter {
     }
 
     if (requests.length >= dynamicMaximumRequests) {
-      const timeTillReset =
-        (dynamicTimeWindow - (currentTime - requests[0])) / 1000;
       return {
         isRateLimited: true,
-        timeTillReset: timeTillReset,
-        message: `Too many notifications sent to the same user. New notifications will be sent to user after ${timeTillReset} seconds`,
       };
     }
-
     requests.push(currentTime);
     this.userRequestMap.set(userId, requests);
     return {
       isRateLimited: false,
-      timeLeft: (dynamicTimeWindow - (currentTime - requests[0])) / 1000,
-      requestLeft: dynamicMaximumRequests - requests.length,
-      message: "Notification will be sent to receiver",
     };
   }
 }

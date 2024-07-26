@@ -1,5 +1,4 @@
 const prisma = require("../prisma/prisma_client");
-const { rateLimiter } = require("./socket");
 
 exports.saveNewNotification = async (req, res) => {
   const { data } = req.body;
@@ -83,15 +82,19 @@ exports.updateAllOfflineNotifications = async (req, res) => {
     });
   }
 };
+
 exports.saveNewNotificationInteraction = async (req, res) => {
   const userId = req.user.id;
   const { category, notificationId } = req.body;
   try {
-    const newInteraction = await rateLimiter.saveNotificationInteraction(
-      userId,
-      category,
-      notificationId
-    );
+    await prisma.notificationInteractions.create({
+      data: {
+        userId: userId,
+        timestamp: new Date(),
+        category: category,
+        notificationId: notificationId,
+      },
+    });
     return res.status(200).json(newInteraction);
   } catch (error) {
     res.status(500).json({
