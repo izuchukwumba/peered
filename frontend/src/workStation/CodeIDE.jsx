@@ -13,6 +13,7 @@ function CodeIDE() {
   const [version, setVersion] = useState("18.15.0");
   const [showEditor, setShowEditor] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setisLoading] = useState(false);
 
   const editorRef = useRef();
   const { groupId, fileId } = useParams();
@@ -54,6 +55,7 @@ function CodeIDE() {
   }
   const updateFileDetails = async () => {
     try {
+      setisLoading(true);
       const response = await axios.put(
         `${BACKEND_URL}/group/${groupId}/files/${fileId}/update-file`,
         { newFileContent },
@@ -68,6 +70,7 @@ function CodeIDE() {
       setError("Error updating file details");
     } finally {
       fetchFileDetails();
+      setisLoading(false);
     }
   };
 
@@ -82,7 +85,13 @@ function CodeIDE() {
               version={version}
               fileName={fileData.fileName}
             />
-            <Button mt={5} ml={12} onClick={updateFileDetails}>
+            <Button
+              mt={5}
+              ml={12}
+              onClick={updateFileDetails}
+              isLoading={isLoading}
+              loadingText="Saving"
+            >
               Save File Content
             </Button>
           </HStack>

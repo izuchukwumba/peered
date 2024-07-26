@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@chakra-ui/react";
 import "./CodeGroupsList.css";
+import Loading from "../app/Loading";
 import axios from "axios";
 
 function CodeGroups() {
@@ -12,6 +13,7 @@ function CodeGroups() {
   const [groupImageQuery, setGroupImageQuery] = useState("");
   const [groupImageUrl, setGroupImageUrl] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("jwt");
@@ -22,6 +24,7 @@ function CodeGroups() {
 
   const getGroupImageUrl = async (query, width, height) => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${BACKEND_URL}/api/search-for-image?query=${
           ("team ", query)
@@ -31,6 +34,8 @@ function CodeGroups() {
       setGroupImageUrl(data);
     } catch (error) {
       setError("Error fetching group image");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -42,6 +47,7 @@ function CodeGroups() {
       withCredentials: true,
     };
     try {
+      setIsLoading(true);
       const createdGroups = await axios.get(
         `${BACKEND_URL}/api/user/created-groups`,
         options
@@ -53,6 +59,8 @@ function CodeGroups() {
       setAllGroups([...createdGroups.data, ...groupMemberships.data]);
     } catch (error) {
       setError("Error Fetching Groups.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -79,6 +87,7 @@ function CodeGroups() {
   const handleCreateNewGroup = async (event) => {
     event.preventDefault();
     try {
+      setIsLoading(true);
       const response = await axios.post(
         `${BACKEND_URL}/api/new/code-group`,
         { groupName, members, imgUrl: groupImageUrl },
@@ -89,72 +98,83 @@ function CodeGroups() {
       setGroupImageUrl("");
     } catch (error) {
       setError("Error Creating Group. Try again");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div id="CodeGroups">
-      <form onSubmit={handleCreateNewGroup}>
+      {isLoading ? (
+        <Loading />
+      ) : (
         <div>
-          <label>Group Name</label>
-          <input
-            type="text"
-            value={groupName}
-            onChange={(e) => setGroupName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <div>Add Members</div>
-          <input
-            type="text"
-            value={memberInput}
-            onChange={(e) => setMemberInput(e.target.value)}
-          />
-          <Button type="button" onClick={handleAddMembers}>
-            Add Members
-          </Button>
-        </div>
-        <ul>
-          {members.map((member, index) => (
-            <li key={index}>
-              {member}
-              <button type="button" onClick={() => handleRemoveMember(member)}>
-                &times;
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div>
-          <label>Describe your team with one word</label>
-          <input
-            type="text"
-            value={groupImageQuery}
-            onChange={(e) => setGroupImageQuery(e.target.value)}
-          />
-        </div>
-        <Button type="submit" className="btn">
-          Create New Group
-        </Button>
-        {error && <div style={{ color: "red" }}>{error}</div>}
-      </form>
-
-      <div className="home-group-list">
-        {allGroups.map((group, index) => (
-          <div
-            className="home-group-list-item"
-            key={index}
-            onClick={() => handleGroupClick(group.id)}
-          >
-            <img src={group.imgUrl} alt={group.groupName} />
-            <div>{group.groupName}</div>
+          <form onSubmit={handleCreateNewGroup}>
             <div>
-              Created by {group.creator.username} at {""}
-              {new Date(group.createdAt).toLocaleString()}
+              <label>Group Name</label>
+              <input
+                type="text"
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                required
+              />
             </div>
+            <div>
+              <div>Add Members</div>
+              <input
+                type="text"
+                value={memberInput}
+                onChange={(e) => setMemberInput(e.target.value)}
+              />
+              <Button type="button" onClick={handleAddMembers}>
+                Add Members
+              </Button>
+            </div>
+            <ul>
+              {members.map((member, index) => (
+                <li key={index}>
+                  {member}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveMember(member)}
+                  >
+                    &times;
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div>
+              <label>Describe your team with one word</label>
+              <input
+                type="text"
+                value={groupImageQuery}
+                onChange={(e) => setGroupImageQuery(e.target.value)}
+              />
+            </div>
+            <Button type="submit" className="btn">
+              Create New Group
+            </Button>
+            {error && <div style={{ color: "red" }}>{error}</div>}
+          </form>
+
+          <div className="home-group-list">
+            {allGroups.map((group, index) => (
+              <div
+                className="home-group-list-item"
+                key={index}
+                onClick={() => handleGroupClick(group.id)}
+              >
+                <img src={group.imgUrl} alt={group.groupName} />
+                <div>{group.groupName}</div>
+                <div>
+                  Created by {group.creator.username} at {""}
+                  {new Date(group.createdAt).toLocaleString()}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

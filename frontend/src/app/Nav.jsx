@@ -206,11 +206,13 @@ function Nav() {
             </HStack>
           </HStack>
           <Flex alignItems={"center"}>
-            <i
-              className="fa-solid fa-bell"
-              style={{ fontSize: "20px", color: "#97e8a9" }}
-              onClick={onNotifModalOpen}
-            ></i>
+            <span style={{ cursor: "pointer" }}>
+              <i
+                className="fa-solid fa-bell"
+                style={{ fontSize: "20px", color: "#97e8a9" }}
+                onClick={onNotifModalOpen}
+              ></i>
+            </span>
             <Menu>
               <MenuButton
                 as={Button}
@@ -312,7 +314,7 @@ function Nav() {
 
           <ModalFooter>
             <Button mr={4}>Clear All Notifications</Button>
-            <Button colorScheme="blue" mr={3} onClick={updateAllOfflineNotifs}>
+            <Button colorScheme="blue" mr={3} onClick={onNotifModalClose}>
               Close
             </Button>
           </ModalFooter>
