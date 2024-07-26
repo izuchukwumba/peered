@@ -15,6 +15,7 @@ model User {
   fullName        String
   imageUrl        String?
   availability    String?
+  userBio         String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @default(now()) @updatedAt
   skills          Skill[]
