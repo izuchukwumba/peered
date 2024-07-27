@@ -22,7 +22,7 @@ function GithubAuthCallback() {
       );
       localStorage.setItem("userInfo", JSON.stringify(response.data));
     } catch (error) {
-      console.log(error);
+      throw new Error();
     }
   };
 

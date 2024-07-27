@@ -8,21 +8,22 @@ datasource db {
 }
 
 model User {
-  id              Int           @id @default(autoincrement())
-  username        String        @unique
-  email           String?       @unique
+  id              Int              @id @default(autoincrement())
+  username        String           @unique
+  email           String?          @unique
   password        String?
   fullName        String
   imageUrl        String?
   availability    String?
   userBio         String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @default(now()) @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @default(now()) @updatedAt
   skills          Skill[]
   interests       Interest[]
-  groups_created  CodeGroup[]   @relation("GroupsCreated")
-  groups_added_to GroupMember[] @relation("GroupsAddedTo")
-  files_created   File[]        @relation("UserFiles")
+  groups_created  CodeGroup[]      @relation("GroupsCreated")
+  groups_added_to GroupMember[]    @relation("GroupsAddedTo")
+  files_created   File[]           @relation("UserFiles")
+  ChatbotMessage  ChatbotMessage[]
 }
 
 model CodeGroup {
@@ -95,9 +96,18 @@ model Notification {
 }
 
 model NotificationInteractions {
-  id             Int @id @default(autoincrement())
-  notificationId Int @unique
-  userId    Int
+  id             Int      @id @default(autoincrement())
+  notificationId Int      @unique
+  userId         Int
+  timestamp      DateTime @default(now())
+  category       String
+}
+
+model ChatbotMessage {
+  id        Int      @id @default(autoincrement())
+  content   String
+  type      String
   timestamp DateTime @default(now())
-  category  String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
 }
