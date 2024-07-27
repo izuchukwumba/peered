@@ -72,7 +72,7 @@ function LoginPage() {
       {!isUserAuthenticated && <div>Logged Out</div>}
       <h2 id="login-h2">Already have an account?</h2>
       <h3 id="login-h3">Login!</h3>
-      <form onSubmit={handleLogin}>
+      <form>
         <div>
           <div>Username:</div>
           <input
@@ -92,7 +92,7 @@ function LoginPage() {
           />
         </div>
 
-        <div type="submit" className="btn login-btn">
+        <div type="submit" onClick={handleLogin} className="btn login-btn">
           Login
         </div>
       </form>

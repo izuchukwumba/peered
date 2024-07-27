@@ -1,0 +1,54 @@
+#Chatbot {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: 1px solid rgba(151, 232, 169, 0.3);
+  margin: 50px 10px 10px 10px;
+}
+#chatbot-container {
+  width: 50%;
+  max-height: 700px;
+  overflow-y: scroll;
+}
+.message-container-2 {
+  display: flex;
+  flex-direction: column;
+}
+.question-message {
+  margin-left: auto;
+  background-color: inherit;
+  border: 1px solid #97e8a9;
+  color: #97e8a9;
+  padding: 7px 20px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+.answer-message {
+  background-color: #97e8a9;
+  border: 1px solid #97e8a9;
+  color: black;
+  padding: 7px 20px;
+  border-radius: 10px;
+  margin: 10px 200px 10px 0;
+}
+
+.ai-input-container {
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid gold;
+  margin-top: 20px;
+}
+.ai-input {
+  margin: 20px 20px 10px 0;
+  padding-top: 10px;
+}
+.submit-ai-btn {
+  background-color: #97e8a9;
+  color: black;
+  padding: 10px;
+  border-radius: 10px;
+  padding: 10px 50px;
+}

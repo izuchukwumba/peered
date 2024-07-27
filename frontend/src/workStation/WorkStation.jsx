@@ -6,6 +6,7 @@ import CodeIDE from "./CodeIDE";
 import { useParams } from "react-router-dom";
 import { Box, Text } from "@chakra-ui/react";
 import BackButton from "../app/BackButton";
+import Chatbot from "./Chatbot";
 
 function WorkStation() {
   const [groupData, setGroupData] = useState([]);
@@ -61,6 +62,7 @@ function WorkStation() {
         <Box>
           <CodeIDE fileContent={fileData.fileContent} />
         </Box>
+        <Chatbot />
         {error && <div style={{ color: "red" }}>{error}</div>}
         <Footer />
       </Box>

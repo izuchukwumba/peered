@@ -221,7 +221,7 @@ function Nav() {
               >
                 <Avatar
                   size={"md"}
-                  src={userInfo.imageUrl}
+                  src={userInfo?.imageUrl}
                   ml={8}
                   border={"0.5px solid #97e8a9"}
                 />
