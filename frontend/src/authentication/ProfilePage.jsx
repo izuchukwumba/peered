@@ -74,7 +74,7 @@ function ProfilePage() {
 
   useEffect(() => {
     fetchUserInfo();
-    if (userInfo !== null && loggedInUser.id == userInfo.id) {
+    if (userInfo !== null && loggedInUser?.id == userInfo.id) {
       setIsUser(true);
       setNewFullName(userInfo.fullName);
       setNewImageUrl(userInfo.imageUrl);
@@ -95,10 +95,12 @@ function ProfilePage() {
   function handleCheckbox(event, setValue) {
     const value = event.target.value;
     setValue((prev) => {
-      if (prev.includes(value)) {
+      if (prev?.includes(value)) {
         return prev.filter((val) => val !== value);
-      } else {
+      } else if (prev) {
         return [...prev, value];
+      } else {
+        return [value];
       }
     });
   }
@@ -221,7 +223,7 @@ function ProfilePage() {
                         </Box>
                       );
                     })}
-                  </HStack>
+      </HStack>
                 )}
               </Box>
               <Stack mt={2} direction={"row"}>

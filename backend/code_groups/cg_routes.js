@@ -10,9 +10,9 @@ router.get(
   cg_controllers.getGroupsCreatedByUser
 );
 router.get(
-  "/user/group-memberships",
+  "/user/groups-added-to",
   authMiddleware,
-  cg_controllers.getGroupMemberships
+  cg_controllers.getGroupsAddedTo
 );
 router.get("/search-for-image", cg_controllers.getGroupImageUrl);
 router.get("/group/:groupId", authMiddleware, cg_controllers.getGroupDetails);

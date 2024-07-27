@@ -36,11 +36,11 @@ exports.getGroupsCreatedByUser = async (req, res) => {
 };
 
 //Get all groups User was added to
-exports.getGroupMemberships = async (req, res) => {
+exports.getGroupsAddedTo = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const groupMemberships = await prisma.groupMember.findMany({
+    const groupsAddedTo = await prisma.groupMember.findMany({
       where: { userId: userId },
       include: {
         group: {
@@ -54,7 +54,7 @@ exports.getGroupMemberships = async (req, res) => {
         },
       },
     });
-    const groups = groupMemberships.map((group) => group?.group);
+    const groups = groupsAddedTo.map((group) => group?.group);
     res.status(200).json(groups);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -80,6 +80,7 @@ exports.createGroup = async (req, res) => {
           create: members
             ? members.map((memberUsername) => ({
                 user: { connect: { username: memberUsername } },
+                addedById: creatorId,
               }))
             : [],
         },
@@ -186,7 +187,14 @@ exports.getGroupImageUrl = async (req, res) => {
 //Update Group Details: Group Name, Image and Add More Members
 exports.updateGroupDetails = async (req, res) => {
   const { groupId } = req.params;
-  const { newGroupName, newGroupImageUrl, newMembers } = req.body;
+  const {
+    newGroupName,
+    newGroupImageUrl,
+    newMembers,
+    preferredSkills,
+    preferredAvailability,
+    category,
+  } = req.body;
   const userId = req.user.id;
   try {
     //find group
@@ -217,6 +225,10 @@ exports.updateGroupDetails = async (req, res) => {
     if (newGroupImageUrl) {
       updatedGroupData.imgUrl = newGroupImageUrl;
     }
+    if (preferredAvailability) {
+      updatedGroupData.preferred_availability = preferredAvailability;
+    }
+
     const updatedGroup = await prisma.codeGroup.update({
       where: {
         id: parseInt(groupId),
@@ -227,6 +239,36 @@ exports.updateGroupDetails = async (req, res) => {
         creator: true,
       },
     });
+
+    if (preferredSkills && preferredSkills.length > 0) {
+      await prisma.skill.deleteMany({
+        where: {
+          codeGroupId: parseInt(groupId),
+        },
+      });
+      const skills = preferredSkills.map((skill) => ({
+        skill: skill,
+        codeGroupId: parseInt(groupId),
+      }));
+      await prisma.skill.createMany({
+        data: skills,
+      });
+    }
+
+    if (category && category.length > 0) {
+      await prisma.interest.deleteMany({
+        where: {
+          codeGroupId: parseInt(groupId),
+        },
+      });
+      await prisma.interest.create({
+        data: {
+          Interest: category[0],
+          codeGroupId: parseInt(groupId),
+        },
+      });
+    }
+
     //find user and create group membership
     if (newMembers && newMembers.length > 0) {
       for (const memberUsername of newMembers) {
@@ -250,6 +292,7 @@ exports.updateGroupDetails = async (req, res) => {
                     id: potentialMember.id,
                   },
                 },
+                addedById: userId,
               },
             });
 
@@ -286,7 +329,7 @@ exports.updateGroupDetails = async (req, res) => {
               }
             } else {
               await saveAddedToGroupNotification();
-            }
+            }            
           } catch (error) {
             res
               .status(500)
