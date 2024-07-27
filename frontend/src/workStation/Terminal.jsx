@@ -41,6 +41,7 @@ function Terminal({ editorRef, language, version, fileContent }) {
         description: error.message || "Unable to run code",
         status: "error",
         duration: 6000,
+        isClosable: true,
       });
     } finally {
       setisLoading(false);
