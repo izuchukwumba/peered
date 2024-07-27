@@ -33,5 +33,16 @@ router.get(
   authMiddleware,
   ws_controllers.downloadFile
 );
+router.post("/chatbot", ws_controllers.chatbot);
+router.post(
+  "/save-chatbot-message",
+  authMiddleware,
+  ws_controllers.saveChatbotMessage
+);
+router.get(
+  "/get-chatbot-messages",
+  authMiddleware,
+  ws_controllers.getChatBotMessages
+);
 
 module.exports = router;

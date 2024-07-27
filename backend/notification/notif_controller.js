@@ -87,7 +87,7 @@ exports.saveNewNotificationInteraction = async (req, res) => {
   const userId = req.user.id;
   const { category, notificationId } = req.body;
   try {
-    await prisma.notificationInteractions.create({
+    const newInteraction = await prisma.notificationInteractions.create({
       data: {
         userId: userId,
         timestamp: new Date(),

@@ -364,3 +364,65 @@ exports.runCode = async (req, res) => {
     res.status(500).json({ error: "Error running file. Try again" });
   }
 };
+
+exports.chatbot = async (req, res) => {
+  const apiKey = process.env.GROQ_CHATBOT_API_KEY;
+  const { input } = req.body;
+  const groqUrl = "https://api.groq.com/openai/v1/chat/completions";
+  const MODEL = "llama3-8b-8192";
+  try {
+    const response = await axios.post(
+      groqUrl,
+      { messages: [{ role: "user", content: input }], model: MODEL },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.saveChatbotMessage = async (req, res) => {
+  const userId = req.user.id;
+  const { chatbotMessage, messageType } = req.body;
+  if (!chatbotMessage) {
+    return res.status(400).json({ error: "Error. No message detected" });
+  }
+
+  try {
+    const newMessage = await prisma.chatbotMessage.create({
+      data: {
+        content: chatbotMessage,
+        type: messageType,
+
+        user: {
+          connect: {
+            id: userId,
+          },
+        },
+      },
+    });
+    return res.status(201).json(newMessage);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getChatBotMessages = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const allMessages = await prisma.chatbotMessage.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+    res.status(200).json(allMessages);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
