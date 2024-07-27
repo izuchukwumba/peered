@@ -6,10 +6,20 @@
   border-top: 1px solid rgba(151, 232, 169, 0.3);
   margin: 50px 10px 10px 10px;
 }
+.chatbot-header {
+  font-size: 2rem;
+  position: relative;
+  top: 0;
+  left: 50;
+}
 #chatbot-container {
   width: 50%;
   max-height: 700px;
   overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 .message-container-2 {
   display: flex;

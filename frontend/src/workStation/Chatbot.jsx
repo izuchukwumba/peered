@@ -81,6 +81,7 @@ function Chatbot() {
   return (
     <div id="Chatbot">
       <div id="chatbot-container" ref={containerRef}>
+        <h1 className="chatbot-header">AI Chatbot</h1>
         {isLoading ? (
           <Loading />
         ) : (
@@ -117,8 +118,8 @@ function Chatbot() {
             Submit
           </div>
         </div>
+        {error && <div>{error}</div>}
       </div>
-      {error && <div>{error}</div>}
     </div>
   );
 }
