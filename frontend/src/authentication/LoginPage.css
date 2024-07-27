@@ -1,0 +1,60 @@
+#LoginPage {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+#login-h1 {
+  font-size: 3rem;
+  margin-top: 3rem;
+  color: #97e8a9;
+}
+#login-h2 {
+  font-size: 1.5rem;
+}
+#login-h3 {
+  font-size: 1.2rem;
+}
+
+.login-btn {
+  background-color: #97e8a9;
+  width: fit-content;
+  padding: 10px 200px;
+  border-radius: 10px;
+  font-size: 1.5rem;
+  color: black;
+}
+
+input {
+  border: 1px solid rgba(151, 232, 169, 0.5);
+  padding: 7px 260px 7px 20px;
+  border-radius: 10px;
+  margin-bottom: 40px;
+  margin-top: 10px;
+}
+.github-btn {
+  background-color: black;
+  border: 1px solid #97e8a9;
+  width: fit-content;
+  padding: 7px 20px;
+  margin-top: 15px;
+  margin-bottom: 25px;
+  border-radius: 10px;
+}
+#signup-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.7rem;
+}
+.signup-btn {
+  background-color: black;
+  border: 1px solid #97e8a9;
+  width: fit-content;
+  padding: 7px 20px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
