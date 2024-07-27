@@ -18,7 +18,7 @@ function App() {
   return (
     <NotificationProvider>
       <UserInfoContextProvider>
-        <Box minH="100vh" bg="#0f0a19" color="gray.500">
+        <Box minH="100vh" bg="#0f0a19" color="white" w={"100%"}>
           <Router>
             <AuthenticatedContextProvider>
               <Routes>

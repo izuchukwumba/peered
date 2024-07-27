@@ -239,7 +239,7 @@ exports.updateFileDetails = async (req, res) => {
         if (rateLimitResponse?.isRateLimited) {
           const selfSocketId = userSocketMap.get(userId);
           selfSocketId.emit(socket_names.rate_limit, rateLimitResponse.message);
-        } else if (!rateLimitResponse?.isRateLimited) {
+        } else {
           await saveUpdatedFileNotification();
           userSocketId.emit(socket_names.group_notifications, {
             message: notificationMessage,

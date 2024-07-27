@@ -34,7 +34,7 @@ function Notification() {
 
   return (
     <div id="Notifications">
-      <h1>Notifications</h1>
+      <h1>Activities</h1>
       <div id="notifs">
         {notifications.length > 0 &&
           notifications.map((notif, index) => {
@@ -42,7 +42,7 @@ function Notification() {
               <div
                 key={index}
                 onClick={() => handleNotificationClick(notif)}
-                style={{ fontWeight: !notif.isRead ? "bold" : "normal" }}
+                style={{ fontWeight: !notif.isRead ? "500" : "100" }}
               >
                 {notif.message}
               </div>

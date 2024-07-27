@@ -4,6 +4,7 @@ import Nav from "../app/Nav";
 import Footer from "../app/Footer";
 import "./CodeGroup.css";
 import BackButton from "../app/BackButton";
+import Loading from "../app/Loading";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -30,6 +31,8 @@ function CodeGroup() {
   const [newMembers, setNewMembers] = useState([]);
   const [newFileName, setNewFileName] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     isOpen: isUpdateGroupModalOpen,
     onOpen: onUpdateGroupModalOpen,
@@ -58,6 +61,7 @@ function CodeGroup() {
   };
   const fetchGroupDetails = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.get(
         `${BACKEND_URL}/api/group/${groupId}`,
         options
@@ -67,6 +71,8 @@ function CodeGroup() {
       setAllMembers(response.data.members);
     } catch (error) {
       setError("Error fetching group details");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -76,6 +82,7 @@ function CodeGroup() {
 
   const handleUpdateGroupDetails = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.put(
         `${BACKEND_URL}/api/group/${groupId}/update-code-group`,
         { newGroupName, newGroupImageUrl, newMembers },
@@ -84,12 +91,13 @@ function CodeGroup() {
     } catch (error) {
       setError("Error updating group details");
     } finally {
+      onUpdateGroupModalClose();
+      onAddMembersModalClose();
       setNewGroupName("");
       setNewGroupImageUrl("");
       setNewMembers([]);
       fetchGroupDetails();
-      onUpdateGroupModalClose();
-      onAddMembersModalClose();
+      setIsLoading(false);
     }
   };
 
@@ -108,6 +116,7 @@ function CodeGroup() {
 
   const handleCreateNewFile = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.post(
         `${BACKEND_URL}/group/${groupId}/create-new-file`,
         { newFileName },
@@ -119,6 +128,7 @@ function CodeGroup() {
       setNewFileName("");
       fetchGroupDetails();
       onCreateNewFileModalClose();
+      setIsLoading(false);
     }
   };
 
@@ -128,6 +138,7 @@ function CodeGroup() {
 
   const handleDeleteFile = async (fileId) => {
     try {
+      setIsLoading(true);
       await axios.delete(
         `${BACKEND_URL}/group/${groupId}/files/${fileId}/delete-file`,
         options
@@ -136,6 +147,8 @@ function CodeGroup() {
       alert(`File deleted`);
     } catch (error) {
       setError("Error deleting file");
+    } finally {
+      setIsLoading(false);
     }
   };
   const handleUserProfileClick = (username) => {
@@ -174,41 +187,47 @@ function CodeGroup() {
               >
                 Create New File
               </Button>
-              <div className="file-list">
-                {allFiles?.length > 0
-                  ? allFiles.map((file, index) => {
-                      return (
-                        <div key={index} class="file-list-item">
-                          <div className="tooltip">
-                            <div className="file-item">
-                              <div
-                                className="file-item-main"
-                                onClick={() => handleOpenFile(file.id)}
-                              >
-                                <i className="fa-solid fa-file file-icon"></i>
-                                <div className="file-name">{file.fileName}</div>
-                              </div>
-                              <span>
-                                <Text
-                                  onClick={() => handleDeleteFile(file.id)}
-                                  fontSize={12}
-                                  bg={"gray.700"}
-                                  px={2}
-                                  borderRadius={"lg"}
+              {isLoading ? (
+                <Loading />
+              ) : (
+                <div className="file-list">
+                  {allFiles?.length > 0
+                    ? allFiles.map((file, index) => {
+                        return (
+                          <div key={index} class="file-list-item">
+                            <div className="tooltip">
+                              <div className="file-item">
+                                <div
+                                  className="file-item-main"
+                                  onClick={() => handleOpenFile(file.id)}
                                 >
-                                  Delete file
-                                </Text>
+                                  <i className="fa-solid fa-file file-icon"></i>
+                                  <div className="file-name">
+                                    {file.fileName}
+                                  </div>
+                                </div>
+                                <span>
+                                  <Text
+                                    onClick={() => handleDeleteFile(file.id)}
+                                    fontSize={12}
+                                    bg={"gray.700"}
+                                    px={2}
+                                    borderRadius={"lg"}
+                                  >
+                                    Delete file
+                                  </Text>
+                                </span>
+                              </div>
+                              <span className="tooltip-text">
+                                Created by {file?.creator?.fullName}
                               </span>
                             </div>
-                            <span className="tooltip-text">
-                              Created by {file?.creator?.fullName}
-                            </span>
                           </div>
-                        </div>
-                      );
-                    })
-                  : "No file yet. Create New File"}
-              </div>
+                        );
+                      })
+                    : "No file yet. Create New File"}
+                </div>
+              )}
             </Box>
           </Box>
           <Box
@@ -220,38 +239,44 @@ function CodeGroup() {
             borderRadius={4}
           >
             <Box m={4}>
+              <Button className="btn" onClick={onAddMembersModalOpen} mb={4}>
+                Add More Members
+              </Button>
               {groupData.id ? (
-                <ul>
-                  <li>
-                    <Button
-                      onClick={() =>
-                        handleUserProfileClick(groupData.creator.username)
-                      }
-                    >
-                      {groupData.creator.fullName}&nbsp;&nbsp;(creator)
-                    </Button>
-                  </li>
-                  {allMembers.map((member, index) => {
-                    return (
-                      <li key={index}>
+                <div>
+                  {isLoading ? (
+                    <Loading />
+                  ) : (
+                    <ul>
+                      <li>
                         <Button
                           onClick={() =>
-                            handleUserProfileClick(member.user.username)
+                            handleUserProfileClick(groupData.creator.username)
                           }
                         >
-                          {member.user.fullName}
+                          {groupData.creator.fullName}&nbsp;&nbsp;(creator)
                         </Button>
                       </li>
-                    );
-                  })}
-                </ul>
+                      {allMembers.map((member, index) => {
+                        return (
+                          <li key={index}>
+                            <Button
+                              onClick={() =>
+                                handleUserProfileClick(member.user.username)
+                              }
+                            >
+                              {member.user.fullName}
+                            </Button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
               ) : (
                 "Fetching Group Data..."
               )}
             </Box>
-            <Button className="btn" onClick={onAddMembersModalOpen}>
-              Add More Members
-            </Button>
           </Box>
         </HStack>
         <Modal

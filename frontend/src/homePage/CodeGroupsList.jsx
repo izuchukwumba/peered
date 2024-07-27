@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./CodeGroupsList.css";
+import Loading from "../app/Loading";
 import axios from "axios";
 import {
   Box,
@@ -37,6 +38,7 @@ function CodeGroups() {
   const [newGroupId, setNewGroupId] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const {
     isOpen: isCreateGroupModalOpen,
     onOpen: onCreatGroupModalOpen,
@@ -69,6 +71,7 @@ function CodeGroups() {
 
   const getGroupImageUrl = async (query, width, height) => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${BACKEND_URL}/api/search-for-image?query=${
           ("team ", query)
@@ -78,11 +81,14 @@ function CodeGroups() {
       setGroupImageUrl(data);
     } catch (error) {
       setError("Error fetching group image");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const getGroups = async () => {
     try {
+      setIsLoading(true);
       const createdGroups = await axios.get(
         `${BACKEND_URL}/api/user/created-groups`,
         options
@@ -94,6 +100,8 @@ function CodeGroups() {
       setAllGroups([...createdGroups.data, ...groupsAddedTo.data]);
     } catch (error) {
       setError("Error Fetching Groups.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -125,6 +133,7 @@ function CodeGroups() {
   const handleCreateNewGroup = async (event) => {
     event.preventDefault();
     try {
+      setIsLoading(true);
       const response = await axios.post(
         `${BACKEND_URL}/api/new/code-group`,
         { groupName, members, imgUrl: groupImageUrl },
@@ -165,7 +174,9 @@ function CodeGroups() {
       );
       setRecommendations(response.data);
     } catch (error) {
-      setError(error);
+      setError("Error Creating Group. Try again");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -216,24 +227,28 @@ function CodeGroups() {
   return (
     <div id="CodeGroups">
       <Button onClick={onCreatGroupModalOpen} mt={4} ml={2}>
-        Create New Code Group
-      </Button>
-      <div className="home-group-list">
-        {allGroups.map((group, index) => (
-          <div
-            className="home-group-list-item"
-            key={index}
-            onClick={() => handleGroupClick(group.id)}
-          >
-            <img src={group.imgUrl} alt={group.groupName} />
-            <div>{group.groupName}</div>
-            <div>
-              Created by {group.creator.username} at {""}
-              {new Date(group.createdAt).toLocaleString()}
-            </div>
+    Create New Code Group
+  </Button>
+      {isLoading ? 
+        <Loading />
+       : (
+          <div className="home-group-list">
+            {allGroups.map((group, index) => (
+              <div
+                className="home-group-list-item"
+                key={index}
+                onClick={() => handleGroupClick(group.id)}
+              >
+                <img src={group.imgUrl} alt={group.groupName} />
+                <div>{group.groupName}</div>
+                <div>
+                  Created by {group.creator.username} at {""}
+                  {new Date(group.createdAt).toLocaleString()}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )}
       <Modal isOpen={isCreateGroupModalOpen} onClose={onCreateGroupModalClose}>
         <ModalOverlay />
         <ModalContent>
@@ -466,6 +481,6 @@ function CodeGroups() {
         </ModalContent>
       </Modal>
     </div>
-  );
-}
+      )}
+  
 export default CodeGroups;

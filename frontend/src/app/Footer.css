@@ -1,6 +1,4 @@
 #Footer {
-  /* flex: 0 0 auto; */
-  height: 70px;
-  border: 1px solid white;
+  border-top: 1px solid #97e8a9;
   margin-top: 20px;
 }

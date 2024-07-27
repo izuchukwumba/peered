@@ -5,6 +5,7 @@ import Footer from "../app/Footer";
 import CodeIDE from "./CodeIDE";
 import { useParams } from "react-router-dom";
 import { Box, Text } from "@chakra-ui/react";
+import BackButton from "../app/BackButton";
 
 function WorkStation() {
   const [groupData, setGroupData] = useState([]);
@@ -53,14 +54,16 @@ function WorkStation() {
 
   return (
     <Box id="WorkStation">
-      <Text>Welcome to {groupData.groupName} Code Group</Text>
       <Nav />
-      <Box>
-        <CodeIDE fileContent={fileData.fileContent} />
+      <Box pt={24}>
+        <BackButton />
+        <Text mb={6}>Welcome to {groupData.groupName} group</Text>
+        <Box>
+          <CodeIDE fileContent={fileData.fileContent} />
+        </Box>
+        {error && <div style={{ color: "red" }}>{error}</div>}
+        <Footer />
       </Box>
-      <div>This is group: {groupData.groupName}</div>
-      {error && <div style={{ color: "red" }}>{error}</div>}
-      <Footer />
     </Box>
   );
 }

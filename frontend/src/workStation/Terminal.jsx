@@ -66,7 +66,7 @@ function Terminal({ editorRef, language, version, fileContent }) {
         p={2}
         border="1px solid"
         borderRadius={4}
-        color={isCodeBugged ? "red.400" : ""}
+        color={isCodeBugged ? "red.400" : "gray.500"}
         borderColor={isCodeBugged ? "red.500" : "#333"}
       >
         {codeOutput
