@@ -8,6 +8,6 @@ Technical Challenge 1 Documentation: https://docs.google.com/document/d/1JyBP2sf
 
 Technical Challenge 2 Documentation: https://docs.google.com/document/d/1Kuw8Y39haz8uN-wjoc08aXiYIfz_t0SycimojoTlgto/edit?usp=sharing
 
-Stretch Features Documnetation: https://docs.google.com/document/d/1Lymxk9J52kJ0RrC2yryEjXg-RFuWTL-8dBJhuOw26fQ/edit?usp=sharing
+Stretch Features Documentation: https://docs.google.com/document/d/1Lymxk9J52kJ0RrC2yryEjXg-RFuWTL-8dBJhuOw26fQ/edit?usp=sharing
 
 
