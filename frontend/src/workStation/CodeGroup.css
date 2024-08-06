@@ -1,3 +1,16 @@
+.code-group-main {
+  margin-bottom: -20px;
+  background-size: cover;
+  position: relative;
+}
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 10, 25, 0.9);
+}
 .tooltip {
   position: relative;
   display: inline-block;
@@ -65,8 +78,11 @@
   justify-content: center;
   align-items: center;
 }
-
 .file-name {
   font-size: 1.1rem;
   color: white;
+}
+.updateGroupInput {
+  width: 100%;
+  padding: 10px;
 }

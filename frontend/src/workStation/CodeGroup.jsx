@@ -49,7 +49,7 @@ function CodeGroup() {
     onClose: onCreateNewFileModalClose,
   } = useDisclosure();
 
-  const { groupId } = useParams();
+  const { groupId, username } = useParams();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("jwt");
   const navigate = useNavigate();
@@ -133,7 +133,7 @@ function CodeGroup() {
   };
 
   function handleOpenFile(fileId) {
-    navigate(`/group/${groupId}/files/${fileId}/workstation`);
+    navigate(`/${username}/group/${groupId}/files/${fileId}/workstation`);
   }
 
   const handleDeleteFile = async (fileId) => {
@@ -158,35 +158,57 @@ function CodeGroup() {
   return (
     <Box>
       <Nav />
-      <Box pt={24}>
-        <BackButton />
-        <Box>{groupData.groupName}</Box>
-        <img
-          src={groupData.imgUrl}
-          alt={`${(groupData.groupName, "'s image")}`}
-        />
+      <Box
+        pt={24}
+        pb={0}
+        bgImg={groupData.imgUrl}
+        className="code-group-main"
+        pl={2}
+        pr={3}
+      >
+        <div className="background-overlay"></div>
+        <Box display={"flex"} alignItems={"center"}>
+          <BackButton />
+          <Box position={"relative"} fontSize={40} ml={6}>
+            Welcome to{" "}
+            <span style={{ color: "#97e8a9", fontWeight: "bold" }}>
+              {groupData.groupName}
+            </span>{" "}
+            code group
+          </Box>
+        </Box>
         <Button mt={4} className="btn" onClick={onUpdateGroupModalOpen}>
           Update Group
         </Button>
-        <HStack mt={4}>
+        <HStack mt={4} pb={4}>
           <Box
-            w="50%"
+            w="70%"
             id="code-group-files"
-            height="75vh"
+            minH="67vh"
+            maxH={"67vh"}
             p={2}
-            border="1px solid"
+            border="0.1px solid #97e8a9"
             borderRadius={4}
+            position={"relative"}
+            overflowY={"scroll"}
           >
             <Box m={4}>
-              <div style={{ fontSize: "2rem", color: "white" }}>Files</div>
-              <Button
-                className="btn"
-                onClick={onCreateNewFileModalOpen}
-                mb={6}
-                mt={2}
-              >
-                Create New File
-              </Button>
+              <Box display={"flex"} gap={10}>
+                <div style={{ fontSize: "2rem", color: "white" }}>Files</div>
+                <Box
+                  className="btn"
+                  onClick={onCreateNewFileModalOpen}
+                  mb={6}
+                  mt={2}
+                  px={4}
+                  py={2}
+                  bg={"#97e8a9"}
+                  color={"black"}
+                  fontWeight={500}
+                >
+                  Create New File
+                </Box>
+              </Box>
               {isLoading ? (
                 <Loading />
               ) : (
@@ -225,49 +247,81 @@ function CodeGroup() {
                           </div>
                         );
                       })
-                    : "No file yet. Create New File"}
+                    : "No file created yet."}
                 </div>
               )}
             </Box>
           </Box>
           <Box
-            w="50%"
+            ml={10}
+            pt={6}
+            px={4}
+            w="30%"
             id="code-group-group-members"
-            height="75vh"
-            p={2}
-            border="1px solid"
+            minH="67vh"
+            maxH={"67vh"}
+            border="0.1px solid #97e8a9"
             borderRadius={4}
+            position={"relative"}
+            overflowY={"scroll"}
           >
-            <Box m={4}>
-              <Button className="btn" onClick={onAddMembersModalOpen} mb={4}>
+            <Box
+              display={"flex"}
+              flexDirection={"row"}
+              alignItems={"bottom"}
+              justifyContent={"space-between"}
+            >
+              <div style={{ fontSize: "2rem", color: "white" }}>Members</div>
+              <Box
+                className="btn"
+                onClick={onAddMembersModalOpen}
+                mb={4}
+                px={4}
+                py={2}
+                bg={"#97e8a9"}
+                color={"black"}
+                fontWeight={500}
+              >
                 Add More Members
-              </Button>
+              </Box>
+            </Box>
+
+            <Box mt={4}>
               {groupData.id ? (
                 <div>
                   {isLoading ? (
                     <Loading />
                   ) : (
                     <ul>
-                      <li>
-                        <Button
-                          onClick={() =>
-                            handleUserProfileClick(groupData.creator.username)
-                          }
-                        >
-                          {groupData.creator.fullName}&nbsp;&nbsp;(creator)
-                        </Button>
-                      </li>
+                      <Box
+                        onClick={() =>
+                          handleUserProfileClick(groupData.creator.username)
+                        }
+                        bg={"rgba(149, 148, 148, 0.4)"}
+                        w={"fit-content"}
+                        px={10}
+                        py={2}
+                        mb={4}
+                        cursor={"pointer"}
+                      >
+                        {groupData.creator.fullName}&nbsp;&nbsp;(creator)
+                      </Box>
                       {allMembers.map((member, index) => {
                         return (
-                          <li key={index}>
-                            <Button
-                              onClick={() =>
-                                handleUserProfileClick(member.user.username)
-                              }
-                            >
-                              {member.user.fullName}
-                            </Button>
-                          </li>
+                          <Box
+                            key={index}
+                            onClick={() =>
+                              handleUserProfileClick(member.user.username)
+                            }
+                            bg={"rgba(149, 148, 148, 0.4)"}
+                            w={"fit-content"}
+                            px={10}
+                            py={2}
+                            mb={4}
+                            cursor={"pointer"}
+                          >
+                            {member.user.fullName}
+                          </Box>
                         );
                       })}
                     </ul>
@@ -294,7 +348,8 @@ function CodeGroup() {
                   type="text"
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
-                  placeholder="optional"
+                  placeholder="Optional"
+                  className="updateGroupInput"
                 />
               </div>
               <div>
@@ -303,7 +358,8 @@ function CodeGroup() {
                   type="text"
                   value={newGroupImageUrl}
                   onChange={(e) => setNewGroupImageUrl(e.target.value)}
-                  placeholder="optional"
+                  placeholder="Optional"
+                  className="updateGroupInput"
                 />
               </div>
               <div>
@@ -312,7 +368,8 @@ function CodeGroup() {
                   type="text"
                   value={newMemberInput}
                   onChange={(e) => setNewMemberInput(e.target.value)}
-                  placeholder="type username"
+                  placeholder="Type username"
+                  className="updateGroupInput"
                 />
                 <Button variant="outline" onClick={handleAddNewMemberToList}>
                   Add member
@@ -360,6 +417,7 @@ function CodeGroup() {
                   value={newMemberInput}
                   onChange={(e) => setNewMemberInput(e.target.value)}
                   placeholder="type username"
+                  className="updateGroupInput"
                 />
                 <Button variant="outline" onClick={handleAddNewMemberToList}>
                   Add to queue
@@ -410,6 +468,7 @@ function CodeGroup() {
                   value={newFileName}
                   onChange={(e) => setNewFileName(e.target.value)}
                   placeholder="type file name"
+                  className="updateGroupInput"
                 />
               </div>
             </ModalBody>
@@ -423,8 +482,8 @@ function CodeGroup() {
         </Modal>
 
         {error && <div style={{ color: "red" }}>{error}</div>}
-        <Footer />
-      </Box>
+      </Box>{" "}
+      <Footer />
     </Box>
   );
 }

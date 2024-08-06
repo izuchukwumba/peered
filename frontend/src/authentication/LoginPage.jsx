@@ -58,6 +58,7 @@ function LoginPage() {
       setIsUserAuthenticated(true);
       fetchUserInfo(username, data.token);
       login();
+      navigate(`/${username}/home`);
     } catch (err) {
       setError(err.message);
     }
@@ -69,7 +70,6 @@ function LoginPage() {
     <div id="LoginPage">
       <img src={logo} alt="peered-logo" />
       <h1 id="login-h1">Welcome to Peered</h1>
-      {!isUserAuthenticated && <div>Logged Out</div>}
       <h2 id="login-h2">Already have an account?</h2>
       <h3 id="login-h3">Login!</h3>
       <form>
@@ -103,7 +103,7 @@ function LoginPage() {
       <div>
         <div id="signup-div">
           Don't have an account?
-          <div className="btn signup-btn" onClick={() => navigate("/signup`")}>
+          <div className="btn signup-btn" onClick={() => navigate("/signup")}>
             Sign Up Now
           </div>
         </div>

@@ -23,6 +23,11 @@ router.put(
   authMiddleware,
   notif_controllers.updateAllOfflineNotifications
 );
+router.delete(
+  "/delete-all-notifications",
+  authMiddleware,
+  notif_controllers.deleteAllNotifications
+);
 router.post(
   "/new-notif-interaction",
   authMiddleware,

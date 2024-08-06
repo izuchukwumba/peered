@@ -4,13 +4,55 @@
   height: 70%;
   margin-bottom: 20px;
   overflow-y: scroll;
+  padding-left: 30px;
+}
+.add-new-group {
+  background-color: #97e8a9;
+  width: fit-content;
+  padding: 7px 15px;
+  border-radius: 7px;
+  color: #0f0a19;
+  font-weight: 700;
+  margin-top: 10px;
 }
 .home-group-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 30px;
+  padding: 30px;
+  padding-left: 0;
 }
 .home-group-list-item {
-  height: 100px;
-  width: 200px;
+  width: 250px;
+  border: 1px solid #97e8a9;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.home-group-list-item img {
+  width: 250px;
+  height: 300px;
+  border-radius: 8px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.code-group-texts {
+  padding: 5px 7px 5px 7px;
+}
+.code-group-name-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+.code-group-name {
+  font-size: 1.2rem;
+  font-family: "DM Sans";
+}
+.code-group-members {
+  font-size: 0.8rem;
+}
+.code-group-creator {
+  font-size: 0.9rem;
+}
+.code-group-time {
+  font-size: 0.7rem;
 }

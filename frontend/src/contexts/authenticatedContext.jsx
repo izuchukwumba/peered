@@ -28,7 +28,6 @@ export const AuthenticatedContextProvider = ({ children }) => {
 
   const login = () => {
     setIsUserAuthenticated(true);
-    navigate("/home");
   };
   const logout = () => {
     setIsUserAuthenticated(false);

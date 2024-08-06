@@ -50,24 +50,28 @@ function Terminal({ editorRef, language, version, fileContent }) {
 
   return (
     <Box id="Terminal">
-      <Text mb={2} fontSize="lg">
-        Code Output
-      </Text>
       <Button
-        variant="outline"
-        colorScheme="green"
+        bg={"rgb(151, 232, 169)"}
+        color="black"
+        mt={8}
         mb={4}
         isLoading={isLoading}
         onClick={handleRunCode}
+        _hover={{
+          bg: "#0f0a19",
+          color: "#97e8a9",
+          border: "1px solid",
+          borderColor: "#97e8a9",
+        }}
       >
         Run Code
       </Button>
       <Box
-        height="75vh"
+        height="70vh"
         p={2}
         border="1px solid"
         borderRadius={4}
-        color={isCodeBugged ? "red.400" : "gray.500"}
+        color={isCodeBugged ? "red.400" : "rgba(151, 232, 169, 0.8)"}
         borderColor={isCodeBugged ? "red.500" : "#333"}
       >
         {codeOutput

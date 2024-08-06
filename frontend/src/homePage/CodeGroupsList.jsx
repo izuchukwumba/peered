@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "./CodeGroupsList.css";
 import Loading from "../app/Loading";
 import axios from "axios";
@@ -39,6 +39,7 @@ function CodeGroups() {
   const [recommendations, setRecommendations] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { username } = useParams();
   const {
     isOpen: isCreateGroupModalOpen,
     onOpen: onCreatGroupModalOpen,
@@ -64,9 +65,8 @@ function CodeGroups() {
     },
     withCredentials: true,
   };
-
   const handleGroupClick = (groupId) => {
-    navigate(`/group/${groupId}`);
+    navigate(`/${username}/group/${groupId}`);
   };
 
   const getGroupImageUrl = async (query, width, height) => {
@@ -85,7 +85,6 @@ function CodeGroups() {
       setIsLoading(false);
     }
   };
-
   const getGroups = async () => {
     try {
       setIsLoading(true);
@@ -220,35 +219,63 @@ function CodeGroups() {
       setError("Error updating group details");
     } finally {
       onRecommendationClose();
-      navigate(`/group/${groupId}`);
+      navigate(`/${username}/group/${groupId}`);
     }
   };
-
   return (
     <div id="CodeGroups">
-      <Button onClick={onCreatGroupModalOpen} mt={4} ml={2}>
-    Create New Code Group
-  </Button>
-      {isLoading ? 
+      <Box position={"absolute"} bg={"#0f0a19"} w={"72%"} pb={4}>
+        <Text pt={4} fontWeight={"bold"} fontSize={20} color={"#97e8a9"}>
+          Code Groups
+        </Text>
+        <div
+          className="add-new-group btn"
+          onClick={onCreatGroupModalOpen}
+          mt={4}
+        >
+          Create new group
+        </div>
+      </Box>
+      {isLoading ? (
         <Loading />
-       : (
-          <div className="home-group-list">
-            {allGroups.map((group, index) => (
-              <div
-                className="home-group-list-item"
-                key={index}
-                onClick={() => handleGroupClick(group.id)}
-              >
-                <img src={group.imgUrl} alt={group.groupName} />
-                <div>{group.groupName}</div>
-                <div>
-                  Created by {group.creator.username} at {""}
-                  {new Date(group.createdAt).toLocaleString()}
+      ) : (
+        <Box className="home-group-list" mt={24}>
+          {allGroups.map((group, index) => (
+            <div
+              className="home-group-list-item"
+              key={index}
+              onClick={() => handleGroupClick(group.id)}
+            >
+              <img src={group.imgUrl} alt={group.groupName} />
+              <div className="code-group-texts">
+                <div className="code-group-name-container">
+                  <div className="code-group-name">{group.groupName}</div>
+                  <div className="code-group-members">
+                    <div>
+                      <span style={{ color: "#97e8a9" }}>
+                        {group.members.length + 1}
+                      </span>{" "}
+                      members
+                    </div>
+                    <div>
+                      <span style={{ color: "#97e8a9" }}>
+                        {group.files.length}
+                      </span>{" "}
+                      files
+                    </div>
+                  </div>
+                </div>
+                <div className="code-group-creator">
+                  Created by {group.creator.username}
+                </div>
+                <div className="code-group-time">
+                  at {new Date(group.createdAt).toLocaleString()}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </Box>
+      )}
       <Modal isOpen={isCreateGroupModalOpen} onClose={onCreateGroupModalClose}>
         <ModalOverlay />
         <ModalContent>
@@ -481,6 +508,7 @@ function CodeGroups() {
         </ModalContent>
       </Modal>
     </div>
-      )}
-  
+  );
+}
+
 export default CodeGroups;

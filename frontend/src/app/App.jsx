@@ -31,7 +31,7 @@ function App() {
                   element={<ProfileSetUp />}
                 />
                 <Route
-                  path="/home"
+                  path="/:username/home"
                   element={
                     <ProtectedHomeRoute>
                       <Home />
@@ -46,9 +46,12 @@ function App() {
                   path="/user/:username/profile-build"
                   element={<ProfileSetUp />}
                 />
-                <Route path="/group/:groupId" element={<CodeGroup />} />
                 <Route
-                  path="/group/:groupId/files/:fileId/workstation"
+                  path="/:username/group/:groupId"
+                  element={<CodeGroup />}
+                />
+                <Route
+                  path="/:username/group/:groupId/files/:fileId/workstation"
                   element={<WorkStation />}
                 />
               </Routes>

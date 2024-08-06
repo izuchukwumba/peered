@@ -54,6 +54,7 @@ function Chatbot() {
   }, [allChatbotMessages.length]);
 
   const handleSubmit = async () => {
+    saveChatBotMessage(input, "question");
     try {
       setIsLoading(true);
       const response = await axios.post(
@@ -66,9 +67,8 @@ function Chatbot() {
         }
       );
       const newResponse = response.data.choices[0].message.content;
-      saveChatBotMessage(input, "question");
+      setTimeout(saveChatBotMessage(newResponse, "answer"), 500);
       fetchAllChatbotMessages();
-      saveChatBotMessage(newResponse, "answer");
     } catch (error) {
       setError(error);
     } finally {
@@ -81,15 +81,14 @@ function Chatbot() {
   return (
     <div id="Chatbot">
       <div id="chatbot-container" ref={containerRef}>
-        <h1 className="chatbot-header">AI Chatbot</h1>
         {isLoading ? (
           <Loading />
         ) : (
           <div className="message-container-1">
             {allChatbotMessages.length > 0 &&
-              allChatbotMessages.map((message) => {
+              allChatbotMessages.map((message, index) => {
                 return (
-                  <div className="message-container-2">
+                  <div key={index} className="message-container-2">
                     <div
                       className={
                         message.type === "question"

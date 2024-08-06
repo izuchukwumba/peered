@@ -329,7 +329,7 @@ exports.updateGroupDetails = async (req, res) => {
               }
             } else {
               await saveAddedToGroupNotification();
-            }            
+            }
           } catch (error) {
             res
               .status(500)

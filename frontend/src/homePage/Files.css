@@ -2,4 +2,21 @@
   border: 1px solid rgb(151, 232, 169, 0.3);
   border-radius: 10px;
   height: 30%;
+  overflow-y: scroll;
+}
+.file-list-home {
+  display: flex;
+  gap: 30px;
+  padding: 15px 40px;
+  flex-wrap: wrap;
+}
+.file-item-home {
+  cursor: pointer;
+}
+.file-name-home {
+  text-align: center;
+}
+.no-files {
+  font-size: 1.25rem;
+  color: rgb(128, 128, 128);
 }

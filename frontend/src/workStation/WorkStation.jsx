@@ -4,16 +4,28 @@ import Nav from "../app/Nav";
 import Footer from "../app/Footer";
 import CodeIDE from "./CodeIDE";
 import { useParams } from "react-router-dom";
-import { Box, Text } from "@chakra-ui/react";
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalCloseButton,
+  ModalHeader,
+  ModalOverlay,
+  Button,
+  Box,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react";
 import BackButton from "../app/BackButton";
 import Chatbot from "./Chatbot";
+import "./Workstation.css";
 
 function WorkStation() {
   const [groupData, setGroupData] = useState([]);
   const [fileData, setFileData] = useState([]);
   const [error, setError] = useState("");
   const { groupId, fileId } = useParams();
-
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("jwt");
 
@@ -56,16 +68,38 @@ function WorkStation() {
   return (
     <Box id="WorkStation">
       <Nav />
-      <Box pt={24}>
-        <BackButton />
-        <Text mb={6}>Welcome to {groupData.groupName} group</Text>
+      <Box mx={4} pt={24}>
+        <Box display={"flex"} alignItems={"center"} mb={6}>
+          <BackButton />
+          <Box fontSize={17} ml={6}>
+            Code Group:{" "}
+            <span style={{ fontWeight: 700, color: "#97e8a9" }}>
+              {groupData.groupName}
+            </span>
+          </Box>
+        </Box>
         <Box>
           <CodeIDE fileContent={fileData.fileContent} />
         </Box>
-        <Chatbot />
         {error && <div style={{ color: "red" }}>{error}</div>}
-        <Footer />
       </Box>
+      <Box className="ai-btn" onClick={onOpen}>
+        <Text>AI </Text>
+        <Text>Chatbot</Text>
+      </Box>
+
+      <Footer />
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent width={"500px"} maxWidth={"600px"}>
+          <ModalHeader>Peered AI Chatbot</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody width="100%">
+            <Chatbot />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

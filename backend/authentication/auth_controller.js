@@ -199,7 +199,7 @@ exports.updateProfile = async (req, res) => {
         });
 
         const interestData = interests.map((interest) => ({
-          interest: interest,
+          Interest: interest,
           userId: user.id,
         }));
         await prisma.interest.createMany({
@@ -257,8 +257,20 @@ exports.getUserInfo = async (req, res) => {
       include: {
         skills: true,
         interests: true,
-        groups_created: true,
-        groups_added_to: true,
+        groups_created: {
+          include: {
+            files: true,
+          },
+        },
+        groups_added_to: {
+          include: {
+            group: {
+              include: {
+                files: true,
+              },
+            },
+          },
+        },
         files_created: true,
       },
     });

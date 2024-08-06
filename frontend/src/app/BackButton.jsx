@@ -6,7 +6,11 @@ function BackButton() {
   const handleBackClick = () => {
     navigate(-1);
   };
-  return <Button onClick={handleBackClick}>Back</Button>;
+  return (
+    <Button onClick={handleBackClick} className="Backbutton">
+      <i className="fa-solid fa-arrow-left" style={{ fontWeight: "bold" }}></i>
+    </Button>
+  );
 }
 
 export default BackButton;

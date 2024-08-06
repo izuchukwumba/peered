@@ -83,6 +83,22 @@ exports.updateAllOfflineNotifications = async (req, res) => {
   }
 };
 
+exports.deleteAllNotifications = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const response = await prisma.notification.deleteMany({
+      where: {
+        receiverId: userId,
+      },
+    });
+    return res.status(200).json({ response });
+  } catch (error) {
+    res.status(500).json({
+      error: "Error deleting all notifications",
+    });
+  }
+};
+
 exports.saveNewNotificationInteraction = async (req, res) => {
   const userId = req.user.id;
   const { category, notificationId } = req.body;

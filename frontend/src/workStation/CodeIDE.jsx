@@ -107,8 +107,15 @@ function CodeIDE() {
               version={version}
               fileName={fileData.fileName}
             />
+            <Box ml={12} fontSize={20}>
+              project file:{" "}
+              <span
+                style={{ fontSize: "25px", fontWeight: 700, color: "#97e8a9" }}
+              >
+                {fileData.fileName}
+              </span>
+            </Box>
             <Button
-              mt={5}
               ml={12}
               onClick={updateFileDetails}
               isLoading={isSaveLoading}
@@ -117,7 +124,7 @@ function CodeIDE() {
               Save File Content
             </Button>
             <Button
-              mt={5}
+              my={6}
               ml={12}
               isLoading={isDownloadLoading}
               loadingText="Downloading"
@@ -133,7 +140,7 @@ function CodeIDE() {
           </HStack>
           {showEditor && (
             <Editor
-              height="75vh"
+              height="70vh"
               theme="vs-dark"
               language={language}
               defaultValue={

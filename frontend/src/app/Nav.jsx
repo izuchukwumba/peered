@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { notif_categories } from "../notification/notif_categories_frontend";
 import {
@@ -39,7 +39,6 @@ const options = {
   },
   withCredentials: true,
 };
-
 export const updateReadNotifs = async (notifId) => {
   try {
     const response = await axios.put(
@@ -123,6 +122,19 @@ function Nav() {
     }
   };
 
+  const handleDeleteAllNotifications = async () => {
+    try {
+      const response = await axios.delete(
+        `${BACKEND_URL}/notif/delete-all-notifications`,
+        options
+      );
+      getNotifications();
+      return response;
+    } catch (error) {
+      throw new Error({ error: "Error deleting all notifications" });
+    }
+  };
+
   useEffect(() => {
     if (offlineNotifications.length > 0) {
       openWelcomeBackModal();
@@ -168,7 +180,7 @@ function Nav() {
           bg: "#97e8a9",
           color: "black",
         }}
-        href={"#"}
+        href="#"
       >
         {children}
       </Box>
@@ -177,6 +189,7 @@ function Nav() {
 
   function Simple() {
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const { username } = useParams();
     return (
       <Box bg={useColorModeValue("gray.100", "gray.900")} pl={6} pr={8} py={2}>
         <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
@@ -196,7 +209,9 @@ function Nav() {
               spacing={4}
               display={{ base: "none", md: "flex" }}
             >
-              <NavLink>{"Home"}</NavLink>
+              <NavLink onClick={() => navigate(`/${username}/home`)}>
+                {"Home"}
+              </NavLink>
               <NavLink>{"Projects"}</NavLink>
               <NavLink>{"CodeGroups"}</NavLink>
               <NavLink>{"Workstation"}</NavLink>
@@ -238,7 +253,9 @@ function Nav() {
         {isOpen ? (
           <Box pb={4} display={{ md: "none" }}>
             <Stack as={"nav"} spacing={4}>
-              <NavLink>{"Home"}</NavLink>
+              <NavLink onClick={() => navigate(`/${username}/home`)}>
+                {"Home"}
+              </NavLink>
               <NavLink>{"Projects"}</NavLink>
               <NavLink>{"CodeGroups"}</NavLink>
               <NavLink>{"Workstation"}</NavLink>
@@ -295,23 +312,25 @@ function Nav() {
           <ModalBody>
             <div>
               <div id="notifs">
-                {notifications.length > 0 &&
-                  notifications.map((notif, index) => {
-                    return (
-                      <div
-                        key={index}
-                        onClick={() => handleNotificationClick(notif)}
-                      >
-                        {notif.message}
-                      </div>
-                    );
-                  })}
+                {notifications.length > 0
+                  ? notifications.map((notif, index) => {
+                      return (
+                        <div
+                          key={index}
+                          onClick={() => handleNotificationClick(notif)}
+                        >
+                          {notif.message}
+                        </div>
+                      );
+                    })
+                  : "No notification found."}
               </div>
             </div>
           </ModalBody>
-
           <ModalFooter>
-            <Button mr={4}>Clear All Notifications</Button>
+            <Button mr={4} onClick={handleDeleteAllNotifications}>
+              Clear All Notifications
+            </Button>
             <Button colorScheme="blue" mr={3} onClick={onNotifModalClose}>
               Close
             </Button>

@@ -6,8 +6,9 @@ const ProtectedHomeRoute = ({ children }) => {
   const { isUserAuthenticated } = useAuthenticatedContext();
 
   const token = Cookies.get("jwt");
+  const token2 = localStorage.getItem("jwt");
 
-  if (isUserAuthenticated || token) {
+  if (isUserAuthenticated || token || token2) {
     return children;
   } else {
     return <Navigate to="/login" />;
