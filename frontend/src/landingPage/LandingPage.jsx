@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthenticatedContext } from "../contexts/authenticatedContext";
 import "./LandingPage.css";
@@ -10,9 +10,11 @@ function LandingPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
-    if (isUserAuthenticated || token) {
+    const token2 = localStorage.getItem("jwt");
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    if (isUserAuthenticated || token || token2) {
       setIsUserAuthenticated(true);
-      navigate("/home");
+      navigate(`/${userInfo.username}/home`);
     } else {
       navigate("/login");
     }
